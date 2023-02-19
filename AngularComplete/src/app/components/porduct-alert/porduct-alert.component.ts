@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Product } from 'src/app/objects/product.object';
 
 @Component({
@@ -8,5 +8,6 @@ import { Product } from 'src/app/objects/product.object';
 })
 export class PorductAlertComponent {
   //Permite recibir datos del componente padre
-  @Input() product!: Product;
+  @Input() product!: Product | undefined;
+  @Output() notify = new EventEmitter();
 }

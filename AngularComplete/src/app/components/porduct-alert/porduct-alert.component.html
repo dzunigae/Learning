@@ -1,5 +1,5 @@
 <p *ngIf="product && product.price > 700; else cheapest">
-  <button type="button">Notify Me</button>
+  <button type="button" (click)="notify.emit()">Notify Me</button>
 </p>
 
 <ng-template #cheapest>

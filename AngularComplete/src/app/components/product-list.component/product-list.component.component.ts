@@ -34,4 +34,8 @@ export class ProductListComponentComponent {
   share() {
     alert('Funcionalidad no implementada aún');
   }
+
+  onNotify() {
+    alert('You will be notified when the product goes on sale');
+  }
 }
