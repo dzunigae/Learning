@@ -1,12 +1,19 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { PrimeraPruebaComponent } from './components/primera-prueba/primera-prueba.component';
+import { IntroduccionDirectivasComponent } from './components/introduccion-directivas/introduccion-directivas.component';
+import { DependencyInjectionLogerComponent } from './components/dependency-injection.loger/dependency-injection.loger.component';
+import { ProductListComponentComponent } from './components/product-list.component/product-list.component.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    PrimeraPruebaComponent,
+    IntroduccionDirectivasComponent,
+    DependencyInjectionLogerComponent,
+    ProductListComponentComponent
   ],
   imports: [
     BrowserModule,

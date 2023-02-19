@@ -1,0 +1,23 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+h1 {
+  text-align: center;
+}
+
+.container {
+  display: flex;
+}
+
+.column {
+  flex: 1;
+}
+
+.little-margin {
+  border: 2px solid black;
+  padding: 10px;
+}
