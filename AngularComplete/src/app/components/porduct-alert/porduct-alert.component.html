@@ -1,0 +1,7 @@
+<p *ngIf="product && product.price > 700; else cheapest">
+  <button type="button">Notify Me</button>
+</p>
+
+<ng-template #cheapest>
+    <p>Precio por debajo de $700</p>
+</ng-template>
