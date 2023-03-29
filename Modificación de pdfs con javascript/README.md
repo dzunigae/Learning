@@ -1,0 +1,1 @@
+Código base obtenido de: https://webninjadeveloper.com/javascript/build-pdf-js-adobe-acrobat-online-pdf-document-editor-in-browser-using-fabricjsjspdf-in-javascript/
