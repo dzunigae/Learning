@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Editor pdf v 0.01</title>
+    <!--Links de hojas de estilos-->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <!--Inicio de la barra de herramientas-->
+
+    
+    <div class="toolbar">
+      <!--Brush Size-->
+      <!--
+      <div class="tool">
+        <label for="">Brush size</label>
+        <input
+          type="number"
+          class="form-control text-right"
+          value="1"
+          id="brush-size"
+          max="50"
+        />
+      </div>
+      -->
+      <!--Font Size-->
+      <!--
+      <div class="tool">
+        <label for="">Font size</label>
+        <select id="font-size" class="form-control">
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="16" selected>16</option>
+          <option value="18">18</option>
+          <option value="24">24</option>
+          <option value="32">32</option>
+          <option value="48">48</option>
+          <option value="64">64</option>
+          <option value="72">72</option>
+          <option value="108">108</option>
+        </select>
+      </div>
+      -->
+      <!--Botones de colores-->
+      <div class="tool">
+        <button class="color-tool active" style="background-color: #212121"></button>
+        <button class="color-tool" style="background-color: red"></button>
+        <button class="color-tool" style="background-color: blue"></button>
+        <button class="color-tool" style="background-color: green"></button>
+        <button class="color-tool" style="background-color: yellow"></button>
+      </div>
+
+      <!--Herramienta de arrastre de componentes-->
+      <!--
+      <div class="tool">
+        <button class="tool-button active">
+          <i
+            class="fa fa-hand-paper-o"
+            title="Free Hand"
+            onclick="enableSelector(event)"
+          ></i>
+        </button>
+      </div>
+      -->
+      <!--Herramienta de lapiz-->
+      <div class="tool">
+        <button class="tool-button">
+          <i
+            class="fa fa-pencil"
+            title="Pencil"
+            onclick="enablePencil(event)"
+          ></i>
+        </button>
+      </div>
+
+      <!--Herramienta de añadir texto-->
+      <div class="tool">
+        <button class="tool-button">
+          <i
+            class="fa fa-font"
+            title="Add Text"
+            onclick="enableAddText(event)"
+          ></i>
+        </button>
+      </div>
+
+      <!--Herramienta para eliminar componentes de la edición-->
+      <!--
+      <div class="tool">
+        <button
+          class="btn btn-danger btn-sm"
+          onclick="deleteSelectedObject(event)"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      -->
+
+      <!--Clear Page-->
+      <div class="tool">
+        <button class="btn btn-danger btn-sm" onclick="clearPage()">
+          Clear Page
+        </button>
+      </div>
+
+      <!--Guardar pdf-->
+      <!--
+      <div class="tool">
+        <button class="btn btn-light btn-sm" onclick="savePDF()">
+          <i class="fa fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+    -->
+    <!--Fin de la barra de herramientas-->
+
+    <!--Inicio de la zona donde se muestra el pdf-->
+    <div id="pdf-container"></div>
+    <!--Fin de la zona donde se muestra el pdf-->
+    
+    <!--Importación de JQUERY-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!--Librería que permite mostrar pdfs en una página web-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js";
+    </script>
+
+    <!--Biblioteca que permite hacer rayones y poner texto sobre el documento-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
+
+    <!--Biblioteca que permite generar un nuevo documento con las modificaciones hechas-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.2.0/jspdf.umd.min.js"></script>
+
+    <script src="scripts.js"></script>
+  </body>
+</html>
