@@ -3,7 +3,7 @@ package com.mycompany.mis_pruebas_de_paralela;
 import java.util.Random;
 import java.util.concurrent.RecursiveAction;
 
-public class Mis_pruebas_de_Paralela {
+public class Mis_pruebas_de_Paralela_short {
     
     //Función para crear un arreglo de números aleatorios.
     //@Input: Tamaño del arreglo
@@ -139,62 +139,26 @@ public class Mis_pruebas_de_Paralela {
     //Prueba que se realiza
     //@Inputs: Arreglo que se sumará, número de tareas (cores)
     protected static double parManyTaskArraySum(final double[] input, final int numTasks) {
-        //numOfTasks = numTasks;
-        //double sum = 0;
         int length = input.length;
-        //ForkJoinPool pool = new ForkJoinPool(numOfTasks);
         ReciprocalArraySumTask[] tasks = new ReciprocalArraySumTask[numTasks];
    
         return recursive_iteration(numTasks, 0, length, tasks, input);
     }
-    
-    //Función que realiza las pruebas y hace las comparaciones
-    //@Inputs: Tamaño de los arreglos, número de tareas (cores)
-    private static double parTestHelper(final int N, final int ntasks) {
-        // Crea un arreglo de entrada de manera aleatoria
-        final double[] input = createArray(N);
-        // Utilza una version secuencial para calcular el resultado correcto
-        final double correct = seqArraySum(input);
-        // Utiliza la implementación paralela para calcular el resultado
-        double sum;
-        
-        sum = parManyTaskArraySum(input, ntasks);
-        
-        final double err = Math.abs(sum - correct);
-        // Asegura que la salida esperada sea la calculada
-        if(err != 0){
-            final String errMsg = String.format("No concuerda el resultado para N = %d, valor esperado = %f, valor calculado = %f, error " +
-                "absoluto = %f \n", N, correct, sum, err);
-            System.out.print(errMsg);
-            
-            return 0;
-        }else{
-            final long seqStartTime = System.currentTimeMillis();
-            for (int r = 0; r < 60; r++) {
-                seqArraySum(input);
-            }
-            final long seqEndTime = System.currentTimeMillis();
 
-            final long parStartTime = System.currentTimeMillis();
-            for (int r = 0; r < 60; r++) {
-                    parManyTaskArraySum(input, ntasks);
-            }
-            final long parEndTime = System.currentTimeMillis();
-
-            final long seqTime = (seqEndTime - seqStartTime) / 60;
-            final long parTime = (parEndTime - parStartTime) / 60;
-
-            return (double)seqTime / (double)parTime;
-        }
-    }
-    
-    //Test
-    public static void testParManyTaskTwoMillion() {
-        //Número de núcleos de la máquina
+    public static void main(String[] args) {
         final int ncores = 8;
-        //Aceleración mínima esperada
         final double minimalExpectedSpeedup = (double)ncores * 0.6;
-        final double speedup = parTestHelper(14, ncores);
+        double speedup = 0;
+        final double[] input = createArray(14);
+        final double correct = seqArraySum(input);
+        double sum = parManyTaskArraySum(input, ncores);
+        final double err = Math.abs(sum - correct);
+        if(err != 0){
+            final String errMsg = String.format("Correcto: " + correct + " Obtenido: " + sum + " Error: " + err);
+            System.out.print(errMsg);
+        }else{
+            speedup = 1;
+        }
         if(minimalExpectedSpeedup > speedup){
             final String errMsg = String.format("Se esperaba que la implmentación de muchas tareas en paralelo pudiera ejecutarse " +
                 "%fx veces más rápido, pero solo alcanzo a mejorar la rapidez (speedup) %fx veces", minimalExpectedSpeedup, speedup);
@@ -202,9 +166,5 @@ public class Mis_pruebas_de_Paralela {
         }else{
             System.out.print("Reto superado, speedup = " + speedup);
         }
-    }
-
-    public static void main(String[] args) {
-        testParManyTaskTwoMillion();
     }
 }
