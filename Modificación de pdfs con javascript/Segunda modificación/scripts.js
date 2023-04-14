@@ -255,7 +255,7 @@ PDFAnnotate.prototype.clearActivePage = function () {
 };
 
 //Llamada de la función principal
-var pdf = new PDFAnnotate("pdf-container", "../prueba.pdf", {
+var pdf = new PDFAnnotate("pdf-container", "https://drive.google.com/file/d/1IJWz5UCMh7D0XRVAEFhW91HCI6szHKhC/preview", {
   onPageUpdated(page, oldData, newData) {
     console.log(page, oldData, newData);
   },
