@@ -13,11 +13,11 @@
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
     <style>
 canvas, .canvas-container {
@@ -34,8 +34,8 @@ canvas, .canvas-container {
     z-index: 10;
 }
 #pdf-container {
-    margin-top: 60px;
-    padding-left: 10px;
+    margin-top: 0px;
+    padding-left: 0px;
     text-align: center;
 }
 button:focus {
@@ -69,9 +69,9 @@ button:focus {
     display: inline-block;
 }
 .toolbar .tool .color-tool.active {
-    -webkit-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.75);
-    box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
+    -moz-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
+    box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
 }
 .toolbar .tool:nth-last-child(1) {
     float: right;
@@ -117,7 +117,7 @@ canvas, .canvas-container {
       this.active_canvas = 0;
       this.container_id = container_id;
       this.url = url;
-      var inst = this; //???
+      var inst = this;
     
       //Establece un nivel de compresión del documento
       if (options.pageImageCompression) {
@@ -250,7 +250,6 @@ canvas, .canvas-container {
         }
       };
     };
-
     //Función que habilita la herramienta de selección
 PDFAnnotate.prototype.enableSelector = function () {
   var inst = this;
@@ -272,7 +271,6 @@ PDFAnnotate.prototype.enablePencil = function () {
     });
   }
 };
-
 //Función que habilita la herramienta de añadir texto
 PDFAnnotate.prototype.enableAddText = function () {
   var inst = this;
@@ -362,10 +360,10 @@ PDFAnnotate.prototype.clearActivePage = function () {
 };
 
 //Llamada de la función principal
-var pdf = new PDFAnnotate("pdf-container", "../prueba.pdf", {
-  onPageUpdated(page, oldData, newData) {
-    console.log(page, oldData, newData);
-  },
+var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
+  //onPageUpdated(page, oldData, newData) {
+  //  console.log(page, oldData, newData);
+  //},
   ready() {
     console.log("Plugin initialized successfully");
   },
@@ -484,6 +482,5 @@ $(function () {
       <!--Inicio de la zona donde se muestra el pdf-->
       <div id="pdf-container"></div>
       <!--Fin de la zona donde se muestra el pdf-->
-
   </body>
 </html>
