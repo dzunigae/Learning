@@ -1,0 +1,5 @@
+- ¡Procesar la imagen!
+- El agente es el jugador (El programa debe jugar sólo)
+- Movimientos posibles: Arriba, abajo, derecha, izquierda
+- Condiciones del ambiente: Contadores, cuerpo de la serpiente, manzana, dimensiones del tablero
+- Aplicar heurísticas
