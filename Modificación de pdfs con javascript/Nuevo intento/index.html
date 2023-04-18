@@ -15,6 +15,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
     />
+    
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -142,7 +143,8 @@ canvas, .canvas-container {
           }
     
           inst.number_of_pages = pdf.numPages;
-    
+          
+          
           //Renderización página por página del documento en un canvas dentro del HTML
           for (var i = 1; i <= pdf.numPages; i++) {
             pdf.getPage(i).then(function (page) {
@@ -250,7 +252,8 @@ canvas, .canvas-container {
         }
       };
     };
-    //Función que habilita la herramienta de selección
+
+//Función que habilita la herramienta de selección
 PDFAnnotate.prototype.enableSelector = function () {
   var inst = this;
   inst.active_tool = 0;
@@ -438,6 +441,20 @@ $(function () {
     pdf.setFontSize(font_size);
   });
 });
+
+function toggle(){
+  var pdf = document.getElementById("pdf-container");
+  var otracosa = document.getElementById("Otra-cosa");
+  if(pdf.style.display == "block"){
+    pdf.style.display = "none";
+    otracosa.style.display = "block";
+  }else{
+    pdf.style.display = "block";
+    otracosa.style.display = "none";
+  }
+
+}
+
     </script>
   </head>
   <body>
@@ -479,8 +496,18 @@ $(function () {
           Clear Page
         </button>
       </div>
+
+      <div class="tool">
+        <button onclick="toggle()">
+          Cambiar los canvas a otra cosa
+        </button>
+      </div>
       <!--Inicio de la zona donde se muestra el pdf-->
-      <div id="pdf-container"></div>
+      <div id="pdf-container" style="max-height: 600px; overflow-y: auto;"></div>
       <!--Fin de la zona donde se muestra el pdf-->
+
+      <div id="Otra-cosa" style="display: none;"> 
+        <p>Hola futuros admiradores</p>
+      </div>
   </body>
 </html>
