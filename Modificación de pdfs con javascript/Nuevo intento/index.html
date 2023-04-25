@@ -10,11 +10,12 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
     />
-    <!--
+    
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />-->
+    />
+
     <style>
 canvas, .canvas-container {
     -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
@@ -108,7 +109,7 @@ canvas, .canvas-container {
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
-      this.color = "#212121";
+      this.color = 'rgba(33, 33, 33, 1)';
       this.font_size = 16;
       this.active_canvas = 0;
       this.container_id = container_id;
@@ -437,21 +438,14 @@ $(function () {
   });
 });
 
-function toggle(){
-  var pdf = document.getElementById("pdf-container");
-  var otracosa = document.getElementById("Otra-cosa");
-  if(pdf.style.display == "block"){
-    pdf.style.display = "none";
-    otracosa.style.display = "block";
-  }else{
-    pdf.style.display = "block";
-    otracosa.style.display = "none";
-  }
 
-}
 
     </script>
     <div class="toolbar">
+      <div class="tool">
+        <label for="">Tamaño del pincel</label>
+        <input type="number" class="form-control text-right" value="1" id="brush-size" max="50">
+      </div>
       <!--Botones de colores-->
       <div class="tool">
         <button
@@ -463,12 +457,26 @@ function toggle(){
         <button class="color-tool" style="background-color: green"></button>
         <button class="color-tool" style="background-color: yellow"></button>
       </div>
+      <!--Opción mano libre-->
+      <div class="tool">
+        <button class="tool-button active"><i class="fa fa-hand-paper-o" title="Free Hand" onclick="enableSelector(event)"></i></button>
+      </div>
       <!--Herramienta de lapiz-->
       <div class="tool">
         <button class="tool-button">
           <i
             class="fa fa-pencil"
             title="Pencil"
+            onclick="enablePencil(event)"
+          ></i>
+        </button>
+      </div>
+      <!--Herramienta de lapiz (Resaltador)-->
+      <div class="tool">
+        <button class="tool-button">
+          <i
+            class="fa fa-paint-brush"
+            title="Highlighter"
             onclick="enablePencil(event)"
           ></i>
         </button>
@@ -483,6 +491,10 @@ function toggle(){
           ></i>
         </button>
       </div>
+      <!--Erase-->
+      <div class="tool">
+        <button class="btn btn-danger btn-sm" onclick="deleteSelectedObject(event)"><i class="fa fa-trash"></i></button>
+      </div>
       <!--Clear Page-->
       <div class="tool">
         <button class="btn btn-danger btn-sm" onclick="clearPage()">
@@ -490,16 +502,8 @@ function toggle(){
         </button>
       </div>
 
-      <div class="tool">
-        <button onclick="toggle()">
-          Cambiar los canvas a otra cosa
-        </button>
-      </div>
       <!--Inicio de la zona donde se muestra el pdf-->
       <div id="pdf-container" style="max-height: 600px; overflow-y: auto;"></div>
       <!--Fin de la zona donde se muestra el pdf-->
 
-      <div id="Otra-cosa" style="display: none;"> 
-        <p>Hola futuros admiradores</p>
-      </div>
   </body>
