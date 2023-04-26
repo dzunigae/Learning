@@ -109,6 +109,7 @@ canvas, .canvas-container {
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
+      this.typeColor = 'rgb';
       this.color = 'rgba(33, 33, 33, 1)';
       this.font_size = 16;
       this.active_canvas = 0;
@@ -336,10 +337,21 @@ PDFAnnotate.prototype.setBrushSize = function (size) {
 //Modifica el color
 PDFAnnotate.prototype.setColor = function (color) {
   var inst = this;
-  inst.color = color;
+  if(inst.typeColor == 'rgb'){
+    inst.color = color;
+    console.log(inst.color);
+  }else{
+    inst.color = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
+    console.log(inst.color);
+  }
   $.each(inst.fabricObjects, function (index, fabricObj) {
-    fabricObj.freeDrawingBrush.color = color;
+    fabricObj.freeDrawingBrush.color = inst.color;
   });
+};
+
+PDFAnnotate.prototype.setColorType = function (type) {
+  var inst = this;
+  inst.typeColor = type;
 };
 
 //Modifica el tamaño de la fuente
@@ -386,8 +398,17 @@ function enableSelector(event) {
   pdf.enableSelector();
 }
 
-//Activar el pincel
-function enablePencil(event) {
+//Activar el pincel normal
+function enablePencil1(event) {
+  pdf.setColorType('rgb');
+  event.preventDefault();
+  changeActiveTool(event);
+  pdf.enablePencil();
+}
+
+//Activar el pincel subrayado
+function enablePencil2(event) {
+  pdf.setColorType('rgba');
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -428,7 +449,6 @@ $(function () {
 
   $("#brush-size").change(function () {
     var width = $(this).val();
-    console.log(width);
     pdf.setBrushSize(width);
   });
 
@@ -450,12 +470,12 @@ $(function () {
       <div class="tool">
         <button
           class="color-tool active"
-          style="background-color: #212121"
+          style="background-color: rgba(33, 33, 33, 1)"
         ></button>
-        <button class="color-tool" style="background-color: red"></button>
-        <button class="color-tool" style="background-color: blue"></button>
-        <button class="color-tool" style="background-color: green"></button>
-        <button class="color-tool" style="background-color: yellow"></button>
+        <button class="color-tool" style="background-color: rgba(255, 0, 0, 1)"></button>
+        <button class="color-tool" style="background-color: rgba(0, 0, 255, 1)"></button>
+        <button class="color-tool" style="background-color: rgba(0, 128, 0, 1)"></button>
+        <button class="color-tool" style="background-color: rgba(255, 255, 0, 1)"></button>
       </div>
       <!--Opción mano libre-->
       <div class="tool">
@@ -467,7 +487,7 @@ $(function () {
           <i
             class="fa fa-pencil"
             title="Pencil"
-            onclick="enablePencil(event)"
+            onclick="enablePencil1(event)"
           ></i>
         </button>
       </div>
@@ -477,7 +497,7 @@ $(function () {
           <i
             class="fa fa-paint-brush"
             title="Highlighter"
-            onclick="enablePencil(event)"
+            onclick="enablePencil2(event)"
           ></i>
         </button>
       </div>
