@@ -15,7 +15,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
-
+      
     <style>
 canvas, .canvas-container {
     -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
@@ -109,7 +109,7 @@ canvas, .canvas-container {
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
-      this.typeColor = 'rgba';
+      this.typeColor = 1;
       this.color = 'rgba(33, 33, 33, 1)';
       this.font_size = 16;
       this.active_canvas = 0;
@@ -338,25 +338,6 @@ PDFAnnotate.prototype.setBrushSize = function (size) {
 PDFAnnotate.prototype.setColor = function (color) {
   var inst = this;
   inst.color = color;
-  if(inst.typeColor == 'rgb' && color[3] == '('){
-    inst.color = color;
-  }else{
-    if(inst.typeColor == 'rgb' && color[3] == 'a'){
-      if(color[color.length - 2] == '1'){
-        inst.color = color.replace('rgba', 'rgb').replace(', 1)', ')');
-      }else{
-        inst.color = color.replace('rgba', 'rgb').replace(', 0.4)', ')');
-      }
-    }else{
-      if(inst.typeColor == 'rgba' && color[3] == 'a'){
-        inst.color = color;
-      }else{
-        if(inst.typeColor == 'rgba' && color[3] == '('){
-          inst.color = color.replace('rgb', 'rgba').replace(')', ', 1)');
-        }
-      }
-    }
-  }
   $.each(inst.fabricObjects, function (index, fabricObj) {
     fabricObj.freeDrawingBrush.color = inst.color;
   });
@@ -385,9 +366,6 @@ PDFAnnotate.prototype.clearActivePage = function () {
 
 //Llamada de la función principal
 var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
-  //onPageUpdated(page, oldData, newData) {
-  //  console.log(page, oldData, newData);
-  //},
   ready() {
     console.log("Plugin initialized successfully");
   },
@@ -414,8 +392,11 @@ function enableSelector(event) {
 //Activar el pincel normal
 function enablePencil1(event) {
   pdf.setBrushSize(3);
+  pdf.typeColor = 1;
   var nColor = pdf.color;
-  pdf.setColorType('rgb');
+  if(nColor[nColor - 2 == '4']){
+    nColor = nColor.replace(', 0.4)', ', 1)');
+  }
   pdf.setColor(nColor);
   event.preventDefault();
   changeActiveTool(event);
@@ -425,11 +406,13 @@ function enablePencil1(event) {
 //Activar el pincel subrayado
 function enablePencil2(event) {
   pdf.setBrushSize(10);
+  pdf.typeColor = 0.4;
   var nColor = pdf.color;
-  console.log(nColor);
-  pdf.setColorType('rgba');
+  if(nColor[nColor - 2 == '1']){
+    nColor = nColor.replace(', 1)', ', 0.4)');
+  }
+  //pdf.setColorType('rgba');
   pdf.setColor(nColor);
-  console.log(pdf.color);
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -439,8 +422,10 @@ function enablePencil2(event) {
 function enableAddText(event) {
   event.preventDefault();
   changeActiveTool(event);
-  pdf.setColorType('rgb');
   var nColor = pdf.color;
+  if(nColor[nColor.length - 2] == '4'){
+    nColor = nColor.replace(', 0.4)', ', 1)');
+  }
   pdf.setColor(nColor);
   pdf.enableAddText();
 }
@@ -468,6 +453,11 @@ $(function () {
     $(".color-tool.active").removeClass("active");
     $(this).addClass("active");
     color = $(this).get(0).style.backgroundColor;
+    if(pdf.typeColor == 1){
+      color = color.replace('rgb', 'rgba').replace(')', ', 1)');
+    }else{
+      color = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
+    }
     pdf.setColor(color);
   });
 
