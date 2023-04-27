@@ -109,7 +109,7 @@ canvas, .canvas-container {
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
-      this.typeColor = 'rgb';
+      this.typeColor = 'rgba';
       this.color = 'rgba(33, 33, 33, 1)';
       this.font_size = 16;
       this.active_canvas = 0;
@@ -337,12 +337,25 @@ PDFAnnotate.prototype.setBrushSize = function (size) {
 //Modifica el color
 PDFAnnotate.prototype.setColor = function (color) {
   var inst = this;
-  if(inst.typeColor == 'rgb'){
+  inst.color = color;
+  if(inst.typeColor == 'rgb' && color[3] == '('){
     inst.color = color;
-    console.log(inst.color);
   }else{
-    inst.color = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
-    console.log(inst.color);
+    if(inst.typeColor == 'rgb' && color[3] == 'a'){
+      if(color[color.length - 2] == '1'){
+        inst.color = color.replace('rgba', 'rgb').replace(', 1)', ')');
+      }else{
+        inst.color = color.replace('rgba', 'rgb').replace(', 0.4)', ')');
+      }
+    }else{
+      if(inst.typeColor == 'rgba' && color[3] == 'a'){
+        inst.color = color;
+      }else{
+        if(inst.typeColor == 'rgba' && color[3] == '('){
+          inst.color = color.replace('rgb', 'rgba').replace(')', ', 1)');
+        }
+      }
+    }
   }
   $.each(inst.fabricObjects, function (index, fabricObj) {
     fabricObj.freeDrawingBrush.color = inst.color;
@@ -400,7 +413,10 @@ function enableSelector(event) {
 
 //Activar el pincel normal
 function enablePencil1(event) {
+  pdf.setBrushSize(3);
+  var nColor = pdf.color;
   pdf.setColorType('rgb');
+  pdf.setColor(nColor);
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -408,7 +424,12 @@ function enablePencil1(event) {
 
 //Activar el pincel subrayado
 function enablePencil2(event) {
+  pdf.setBrushSize(10);
+  var nColor = pdf.color;
+  console.log(nColor);
   pdf.setColorType('rgba');
+  pdf.setColor(nColor);
+  console.log(pdf.color);
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -418,6 +439,9 @@ function enablePencil2(event) {
 function enableAddText(event) {
   event.preventDefault();
   changeActiveTool(event);
+  pdf.setColorType('rgb');
+  var nColor = pdf.color;
+  pdf.setColor(nColor);
   pdf.enableAddText();
 }
 
@@ -462,10 +486,12 @@ $(function () {
 
     </script>
     <div class="toolbar">
+      <!--
       <div class="tool">
         <label for="">Tamaño del pincel</label>
         <input type="number" class="form-control text-right" value="1" id="brush-size" max="50">
       </div>
+      -->
       <!--Botones de colores-->
       <div class="tool">
         <button
