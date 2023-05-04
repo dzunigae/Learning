@@ -10,7 +10,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
     />
-    
+   
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -109,12 +109,12 @@ canvas, .canvas-container {
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
-      this.typeColor = 1;
       this.color = 'rgba(33, 33, 33, 1)';
       this.font_size = 16;
       this.active_canvas = 0;
       this.container_id = container_id;
       this.url = url;
+      this.anterior = 'rgba(33, 33, 33, 1)';
       var inst = this;
     
       //Establece un nivel de compresión del documento
@@ -343,11 +343,6 @@ PDFAnnotate.prototype.setColor = function (color) {
   });
 };
 
-PDFAnnotate.prototype.setColorType = function (type) {
-  var inst = this;
-  inst.typeColor = type;
-};
-
 //Modifica el tamaño de la fuente
 PDFAnnotate.prototype.setFontSize = function (size) {
   this.font_size = size;
@@ -391,13 +386,10 @@ function enableSelector(event) {
 
 //Activar el pincel normal
 function enablePencil1(event) {
-  pdf.setBrushSize(3);
-  pdf.typeColor = 1;
-  var nColor = pdf.color;
-  if(nColor[nColor - 2 == '4']){
-    nColor = nColor.replace(', 0.4)', ', 1)');
+  if(pdf.color[pdf.color.length - 2] == 4){
+    pdf.setColor(pdf.anterior)
   }
-  pdf.setColor(nColor);
+  pdf.setBrushSize(3);
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -406,13 +398,8 @@ function enablePencil1(event) {
 //Activar el pincel subrayado
 function enablePencil2(event) {
   pdf.setBrushSize(10);
-  pdf.typeColor = 0.4;
-  var nColor = pdf.color;
-  if(nColor[nColor - 2 == '1']){
-    nColor = nColor.replace(', 1)', ', 0.4)');
-  }
-  //pdf.setColorType('rgba');
-  pdf.setColor(nColor);
+  pdf.anterior = pdf.color;
+  pdf.setColor('rgba(255, 255, 0, 0.4)');
   event.preventDefault();
   changeActiveTool(event);
   pdf.enablePencil();
@@ -420,13 +407,11 @@ function enablePencil2(event) {
 
 //Activar el texto
 function enableAddText(event) {
+  if(pdf.color[pdf.color.length - 2] == 4){
+    pdf.setColor(pdf.anterior)
+  }
   event.preventDefault();
   changeActiveTool(event);
-  var nColor = pdf.color;
-  if(nColor[nColor.length - 2] == '4'){
-    nColor = nColor.replace(', 0.4)', ', 1)');
-  }
-  pdf.setColor(nColor);
   pdf.enableAddText();
 }
 
@@ -450,15 +435,12 @@ function clearPage() {
 //Inicializador de ls opciones de cambio de tamaño de lápiz, texto y selección de color
 $(function () {
   $(".color-tool").click(function () {
-    $(".color-tool.active").removeClass("active");
-    $(this).addClass("active");
-    color = $(this).get(0).style.backgroundColor;
-    if(pdf.typeColor == 1){
-      color = color.replace('rgb', 'rgba').replace(')', ', 1)');
-    }else{
-      color = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
+    if(pdf.color[pdf.color.length - 2] != 4){
+      $(".color-tool.active").removeClass("active");
+      $(this).addClass("active");
+      color = $(this).get(0).style.backgroundColor;
+      pdf.setColor(color);
     }
-    pdf.setColor(color);
   });
 
   $("#brush-size").change(function () {
@@ -493,10 +475,6 @@ $(function () {
         <button class="color-tool" style="background-color: rgba(0, 128, 0, 1)"></button>
         <button class="color-tool" style="background-color: rgba(255, 255, 0, 1)"></button>
       </div>
-      <!--Opción mano libre-->
-      <div class="tool">
-        <button class="tool-button active"><i class="fa fa-hand-paper-o" title="Free Hand" onclick="enableSelector(event)"></i></button>
-      </div>
       <!--Herramienta de lapiz-->
       <div class="tool">
         <button class="tool-button">
@@ -526,6 +504,10 @@ $(function () {
             onclick="enableAddText(event)"
           ></i>
         </button>
+      </div>
+      <!--Opción mano libre-->
+      <div class="tool">
+        <button class="tool-button active"><i class="fa fa-hand-paper-o" title="Free Hand" onclick="enableSelector(event)"></i></button>
       </div>
       <!--Erase-->
       <div class="tool">
