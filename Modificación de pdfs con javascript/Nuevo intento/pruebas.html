@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="1000" height="600"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
+    <script>
+      var canvas = new fabric.Canvas("canvas");
+      canvas.isDrawingMode = true;
+
+      var rect = new fabric.Rect({
+        left: 100,
+        top: 100,
+        width: 200,
+        height: 100,
+        fill: "#aaa",
+      });
+
+      canvas.add(rect);
+
+      var EraserBrush = fabric.util.createClass(fabric.BaseBrush, {
+        initialize: function (canvas) {
+          this.canvas = canvas;
+          this.lastPoint = null;
+        },
+
+        onMouseDown: function (event) {
+          this.lastPoint = new fabric.Point(event.x, event.y);
+          if (this.lastPoint) {
+            this.eraseTarget(this.lastPoint);
+          }
+        },
+
+        onMouseMove: function (event) {
+          if (this.lastPoint) {
+            var currentPoint = new fabric.Point(event.x, event.y);
+            this.eraseTarget(currentPoint);
+            this.lastPoint = currentPoint;
+          }
+        },
+
+        onMouseUp: function () {
+          this.lastPoint = null;
+        },
+
+        eraseTarget: function (point) {
+          try {
+            var target = this.canvas.findTarget(point);
+            //console.log(target.isType("rect"));
+          } catch (error) {
+            //console.error("Ocurrió un error: ", error);
+          }
+          if (target && target.isType("rect")) {
+            var ctx = this.canvas.getContext();
+            ctx.globalCompositeOperation = "destination-out";
+            this.canvas.renderAll();
+            target.render(ctx);
+            ctx.globalCompositeOperation = "source-over";
+            this.canvas.fire("object:modified", { target: target });
+          }
+        },
+      });
+
+      canvas.freeDrawingBrush = new EraserBrush(canvas);
+      /*
+      var EraserBrush = fabric.util.createClass(fabric.BaseBrush, {
+        initialize: function (canvas) {
+          this.canvas = canvas;
+          this.lastPoint = null;
+        },
+
+        onMouseDown: function (event) {
+          this.lastPoint = new fabric.Point(event.e.offsetX, event.e.offsetY);
+          if (this.lastPoint) {
+            this.eraseTarget(this.lastPoint);
+          }
+        },
+
+        onMouseMove: function (event) {
+          if (this.lastPoint) {
+            var currentPoint = new fabric.Point(
+              event.pointer.x,
+              event.pointer.y
+            );
+            this.eraseTarget(currentPoint);
+            this.lastPoint = currentPoint;
+          }
+        },
+
+        onMouseUp: function () {
+          this.lastPoint = null;
+        },
+
+        eraseTarget: function (point) {
+          var target = this.canvas.findTarget(point);
+          if (target && target.isType("rect")) {
+            var ctx = this.canvas.getContext();
+            ctx.globalCompositeOperation = "destination-out";
+            this.canvas.renderAll();
+            target.render(ctx);
+            ctx.globalCompositeOperation = "source-over";
+            this.canvas.fire("object:modified", { target: target });
+          }
+        },
+      });
+
+      canvas.freeDrawingBrush = new EraserBrush(canvas);
+      */
+    </script>
+  </body>
+</html>
