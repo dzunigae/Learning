@@ -353,64 +353,29 @@ function enableAddText(event) {
 
 //Borrador
 function eraser(event){
-  // Obtener todos los elementos canvas de la página
-  //var canvasElements = document.querySelectorAll('canvas[id]');
-  var canvasElements = document.getElementsByTagName('canvas');
+  var canvasElement = document.getElementById('page-'+(pdf.active_canvas+1)+'-canvas');
+  canvasElement.isDrawingMode = true;
 
-  // Agregar un evento de mouseover a cada canvas
-  for (var i = 0; i < canvasElements.length; i++) {
-    canvasElements[i].addEventListener('mouseover', function(event) {
-      var canvas = new fabric.Canvas(event.target);
-      var context = canvas.getContext('2d');
+  var EraserBrush = fabric.util.createClass(fabric.BaseBrush, {
+    
 
-      // Habilitar el modo borrador
-      canvas.isDrawingMode = true;
-
-      var EraserBrush = fabric.util.createClass(fabric.BaseBrush, {
-        initialize: function (canvas) {
-          this.canvas = canvas;
-          this.lastPoint = null;
-        },
-
-        onMouseDown: function (event) {
-          this.lastPoint = new fabric.Point(event.x, event.y);
-          if (this.lastPoint) {
-            this.eraseTarget(this.lastPoint);
-          }
-        },
-
-        onMouseMove: function (event) {
-          /*if (this.lastPoint) {
-            var currentPoint = new fabric.Point(event.x, event.y);
-            this.eraseTarget(currentPoint);
-            this.lastPoint = currentPoint;
-          }*/
-          var activeObject = this.canvas.getActiveObject();
-          console.log(activeObject);
-        },
-
-        onMouseUp: function () {
-          this.lastPoint = null;
-        },
-
-        eraseTarget: function (point) {
-          // Obtener el objeto activo en el lienzo
-          var activeObject = this.canvas.getActiveObject();
-          
-          // Comprobar si hay un objeto activo
-          if (activeObject) {
-            // Obtener el tipo de objeto
-            var objectType = activeObject.type;
-            
-            // Hacer algo con el tipo de objeto
-            console.log("El objeto es de tipo:", objectType);
-          }
-        },
+    createPath: function(pathData) {
+      var path = new fabric.Path(pathData, {
+        fill: null,
+        stroke: this.color,
+        strokeWidth: this.width,
+        strokeLineCap: this.strokeLineCap,
+        strokeMiterLimit: this.strokeMiterLimit,
+        strokeLineJoin: this.strokeLineJoin,
+        strokeDashArray: this.strokeDashArray,
+        // ADDED BY AZ (24 Nov 2018)
+        globalCompositeOperation: this.globalCompositeOperation,
+        id: this.id
       });
+    }
+  });
 
-      canvas.freeDrawingBrush = new EraserBrush(canvas);
-    });
-  }
+  canvasElement.freeDrawingBrush = new EraserBrush(canvasElement);
 }
 
 //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
