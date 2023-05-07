@@ -139,7 +139,7 @@ canvas, .canvas-container {
             scale = 1.3;
           }
     
-          inst.number_of_pages = pdf.numPages;
+          this.number_of_pages = pdf.numPages;
           
           
           //Renderización página por página del documento en un canvas dentro del HTML
@@ -151,21 +151,21 @@ canvas, .canvas-container {
               canvas.className = "pdf-canvas";
               canvas.height = viewport.height;
               canvas.width = viewport.width;
-              context = canvas.getContext("2d");
               
-              var renderContext = {
-                canvasContext: context,
+              var renderTask = page.render({
+                canvasContext: canvas.getContext("2d"),
                 viewport: viewport,
-              };
-              var renderTask = page.render(renderContext);
+              });
     
               //Se inicializa la biblioteca Fabric.js para poder generar anotaciones en el pdf
               renderTask.promise.then(function () {
                 $(".pdf-canvas").each(function (index, el) {
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
-                inst.pages_rendered++;
-                if (inst.pages_rendered == inst.number_of_pages) inst.initFabric();
+                inst.pages_rendered ++;
+                if (inst.pages_rendered == this.number_of_pages){
+                  inst.initFabric();
+                }
               });
             });
           }
@@ -191,6 +191,7 @@ canvas, .canvas-container {
               color: inst.color,
             },
           });
+
           inst.fabricObjects.push(fabricObj);
     
           //Guarda los objetos creados dentro cada página
@@ -205,16 +206,19 @@ canvas, .canvas-container {
               );
             });
           }
+
           //Renderiza cada página con los cambios hechos con Fabric
           fabricObj.setBackgroundImage(
             background,
             fabricObj.renderAll.bind(fabricObj)
           );
+
           //Añdir objetos tipo texto haciendo click
           $(fabricObj.upperCanvasEl).click(function (event) {
             inst.active_canvas = index;
             inst.fabricClickHandler(event, fabricObj);
           });
+
           //Esto garantiza que cualquier cambio que se haga en el lienzo se guarde.
           fabricObj.on("after:render", function () {
             inst.fabricObjectsData[index] = fabricObj.toJSON();
@@ -250,17 +254,6 @@ canvas, .canvas-container {
       };
     };
 
-//Función que habilita la herramienta de selección
-PDFAnnotate.prototype.enableSelector = function () {
-  var inst = this;
-  inst.active_tool = 0;
-  if (inst.fabricObjects.length > 0) {
-    $.each(inst.fabricObjects, function (index, fabricObj) {
-      fabricObj.isDrawingMode = false;
-    });
-  }
-};
-
 //Función que habilita la herramienta del lapiz
 PDFAnnotate.prototype.enablePencil = function () {
   var inst = this;
@@ -271,6 +264,7 @@ PDFAnnotate.prototype.enablePencil = function () {
     });
   }
 };
+
 //Función que habilita la herramienta de añadir texto
 PDFAnnotate.prototype.enableAddText = function () {
   var inst = this;
@@ -280,50 +274,6 @@ PDFAnnotate.prototype.enableAddText = function () {
       fabricObj.isDrawingMode = false;
     });
   }
-};
-
-//Función que habilita la opción de eliminar objetos
-PDFAnnotate.prototype.deleteSelectedObject = function () {
-  var inst = this;
-  var activeObject = inst.fabricObjects[inst.active_canvas].getActiveObject();
-  if (activeObject) {
-    if (confirm("Are you sure ?"))
-      inst.fabricObjects[inst.active_canvas].remove(activeObject);
-  }
-};
-
-
-//Función que permite guardar el pdf
-PDFAnnotate.prototype.savePdf = function (fileName) {
-  var inst = this;
-  var doc = new jspdf.jsPDF();
-  if (typeof fileName === "undefined") {
-    fileName = `${new Date().getTime()}.pdf`;
-  }
-
-  inst.fabricObjects.forEach(function (fabricObj, index) {
-    if (index != 0) {
-      doc.addPage();
-      doc.setPage(index + 1);
-    }
-    doc.addImage(
-      fabricObj.toDataURL({
-        format: "png",
-      }),
-      inst.pageImageCompression == "NONE" ? "PNG" : "JPEG",
-      0,
-      0,
-      doc.internal.pageSize.getWidth(),
-      doc.internal.pageSize.getHeight(),
-      `page-${index + 1}`,
-      ["FAST", "MEDIUM", "SLOW"].indexOf(inst.pageImageCompression) >= 0
-        ? inst.pageImageCompression
-        : undefined
-    );
-    if (index === inst.fabricObjects.length - 1) {
-      doc.save(fileName);
-    }
-  });
 };
 
 //Modifica el tamaño del pincel
@@ -343,22 +293,6 @@ PDFAnnotate.prototype.setColor = function (color) {
   });
 };
 
-//Modifica el tamaño de la fuente
-PDFAnnotate.prototype.setFontSize = function (size) {
-  this.font_size = size;
-};
-
-//Limpiar la página
-PDFAnnotate.prototype.clearActivePage = function () {
-  var inst = this;
-  var fabricObj = inst.fabricObjects[inst.active_canvas];
-  var bg = fabricObj.backgroundImage;
-  if (confirm("Are you sure?")) {
-    fabricObj.clear();
-    fabricObj.setBackgroundImage(bg, fabricObj.renderAll.bind(fabricObj));
-  }
-};
-
 //Llamada de la función principal
 var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
   ready() {
@@ -370,19 +304,21 @@ var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
 
 //Función que cambia la herramienta activa
 function changeActiveTool(event) {
-  var element = $(event.target).hasClass("tool-button")
-    ? $(event.target)
-    : $(event.target).parents(".tool-button").first();
-  $(".tool-button.active").removeClass("active");
+  var element = null;
+
+  if ($(event.target).hasClass("tool-button")) {
+    element = $(event.target);
+  } else {
+    element = $(event.target).parents(".tool-button").first();
+  }
+
+  if ($(".tool-button.active").length) {
+    $(".tool-button.active").removeClass("active");
+  }
+
   $(element).addClass("active");
 }
 
-//Activar la manito
-function enableSelector(event) {
-  event.preventDefault();
-  changeActiveTool(event);
-  pdf.enableSelector();
-}
 
 //Activar el pincel normal
 function enablePencil1(event) {
@@ -415,24 +351,69 @@ function enableAddText(event) {
   pdf.enableAddText();
 }
 
-//Eliminar objeto seleccionado
-function deleteSelectedObject(event) {
-  event.preventDefault();
-  pdf.deleteSelectedObject();
+//Borrador
+function eraser(event){
+  // Obtener todos los elementos canvas de la página
+  //var canvasElements = document.querySelectorAll('canvas[id]');
+  var canvasElements = document.getElementsByTagName('canvas');
+
+  // Agregar un evento de mouseover a cada canvas
+  for (var i = 0; i < canvasElements.length; i++) {
+    canvasElements[i].addEventListener('mouseover', function(event) {
+      var canvas = new fabric.Canvas(event.target);
+      var context = canvas.getContext('2d');
+
+      // Habilitar el modo borrador
+      canvas.isDrawingMode = true;
+
+      var EraserBrush = fabric.util.createClass(fabric.BaseBrush, {
+        initialize: function (canvas) {
+          this.canvas = canvas;
+          this.lastPoint = null;
+        },
+
+        onMouseDown: function (event) {
+          this.lastPoint = new fabric.Point(event.x, event.y);
+          if (this.lastPoint) {
+            this.eraseTarget(this.lastPoint);
+          }
+        },
+
+        onMouseMove: function (event) {
+          /*if (this.lastPoint) {
+            var currentPoint = new fabric.Point(event.x, event.y);
+            this.eraseTarget(currentPoint);
+            this.lastPoint = currentPoint;
+          }*/
+          var activeObject = this.canvas.getActiveObject();
+          console.log(activeObject);
+        },
+
+        onMouseUp: function () {
+          this.lastPoint = null;
+        },
+
+        eraseTarget: function (point) {
+          // Obtener el objeto activo en el lienzo
+          var activeObject = this.canvas.getActiveObject();
+          
+          // Comprobar si hay un objeto activo
+          if (activeObject) {
+            // Obtener el tipo de objeto
+            var objectType = activeObject.type;
+            
+            // Hacer algo con el tipo de objeto
+            console.log("El objeto es de tipo:", objectType);
+          }
+        },
+      });
+
+      canvas.freeDrawingBrush = new EraserBrush(canvas);
+    });
+  }
 }
 
-//Guardar PDF
-function savePDF() {
-  // pdf.savePdf();
-  pdf.savePdf("sample.pdf"); // save with given file name
-}
-
-//Limpiar la página
-function clearPage() {
-  pdf.clearActivePage();
-}
-
-//Inicializador de ls opciones de cambio de tamaño de lápiz, texto y selección de color
+//Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
 $(function () {
   $(".color-tool").click(function () {
     if(pdf.color[pdf.color.length - 2] != 4){
@@ -442,29 +423,10 @@ $(function () {
       pdf.setColor(color);
     }
   });
-
-  $("#brush-size").change(function () {
-    var width = $(this).val();
-    pdf.setBrushSize(width);
-  });
-
-  $("#font-size").change(function () {
-    var font_size = $(this).val();
-    pdf.setFontSize(font_size);
-  });
 });
-
-
 
     </script>
     <div class="toolbar">
-      <!--
-      <div class="tool">
-        <label for="">Tamaño del pincel</label>
-        <input type="number" class="form-control text-right" value="1" id="brush-size" max="50">
-      </div>
-      -->
-      <!--Botones de colores-->
       <div class="tool">
         <button
           class="color-tool active"
@@ -505,19 +467,9 @@ $(function () {
           ></i>
         </button>
       </div>
-      <!--Opción mano libre-->
-      <div class="tool">
-        <button class="tool-button active"><i class="fa fa-hand-paper-o" title="Free Hand" onclick="enableSelector(event)"></i></button>
-      </div>
       <!--Erase-->
       <div class="tool">
-        <button class="btn btn-danger btn-sm" onclick="deleteSelectedObject(event)"><i class="fa fa-trash"></i></button>
-      </div>
-      <!--Clear Page-->
-      <div class="tool">
-        <button class="btn btn-danger btn-sm" onclick="clearPage()">
-          Clear Page
-        </button>
+        <button class="btn btn-danger btn-sm" onclick="eraser()"><i class="fa fa-trash"></i></button>
       </div>
 
       <!--Inicio de la zona donde se muestra el pdf-->
