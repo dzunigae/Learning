@@ -1,11 +1,19 @@
 <body>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css" />
-
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+    crossorigin="anonymous"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
+  />
+  <!--
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />-->
 
   <style>
     canvas,
@@ -66,9 +74,9 @@
     }
 
     .toolbar .tool .color-tool.active {
-      -webkit-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
-      -moz-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
-      box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1.0);
+      -webkit-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1);
+      -moz-box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1);
+      box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1);
     }
 
     .toolbar .tool:nth-last-child(1) {
@@ -115,12 +123,12 @@
       this.active_tool = 1;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
-      this.color = 'rgba(33, 33, 33, 1)';
+      this.color = "rgba(33, 33, 33, 1)";
       this.font_size = 16;
       this.active_canvas = 0;
       this.container_id = container_id;
       this.url = url;
-      this.anterior = 'rgba(33, 33, 33, 1)';
+      this.anterior = "rgba(33, 33, 33, 1)";
       var inst = this;
 
       //Establece un nivel de compresión del documento
@@ -136,7 +144,6 @@
       //Código cuando la promesa se cumple satisfactoriamente
       loadingTask.promise.then(
         function (pdf) {
-
           //Opción de escalamiento del pdf
           var scale;
           if (options.scale) {
@@ -146,7 +153,6 @@
           }
 
           inst.number_of_pages = pdf.numPages;
-
 
           //Renderización página por página del documento en un canvas dentro del HTML
           for (var i = 1; i <= pdf.numPages; i++) {
@@ -171,7 +177,8 @@
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
                 inst.pages_rendered++;
-                if (inst.pages_rendered == inst.number_of_pages) inst.initFabric();
+                if (inst.pages_rendered == inst.number_of_pages)
+                  inst.initFabric();
               });
             });
           }
@@ -243,9 +250,11 @@
         if (inst.active_tool == 2) {
           var text = new fabric.IText("Sample text", {
             left:
-              event.clientX - fabricObj.upperCanvasEl.getBoundingClientRect().left,
+              event.clientX -
+              fabricObj.upperCanvasEl.getBoundingClientRect().left,
             top:
-              event.clientY - fabricObj.upperCanvasEl.getBoundingClientRect().top,
+              event.clientY -
+              fabricObj.upperCanvasEl.getBoundingClientRect().top,
             fill: inst.color,
             fontSize: inst.font_size,
             selectable: true,
@@ -291,13 +300,13 @@
     //Función que habilita la opción de eliminar objetos
     PDFAnnotate.prototype.deleteSelectedObject = function () {
       var inst = this;
-      var activeObject = inst.fabricObjects[inst.active_canvas].getActiveObject();
+      var activeObject =
+        inst.fabricObjects[inst.active_canvas].getActiveObject();
       if (activeObject) {
         if (confirm("¿Estas seguro?"))
           inst.fabricObjects[inst.active_canvas].remove(activeObject);
       }
     };
-
 
     //Función que permite guardar el pdf
     PDFAnnotate.prototype.savePdf = function (fileName) {
@@ -366,8 +375,8 @@
     };
 
     //Llamada de la función principal
-    var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
-      //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
+    var pdf = new PDFAnnotate("pdf-container", "/images/libros-estudiantes/primero_estudiante_plataforma.pdf", {
+    //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
       ready() {
         console.log("Plugin initialized successfully");
       },
@@ -394,7 +403,7 @@
     //Activar el pincel normal
     function enablePencil1(event) {
       if (pdf.color[pdf.color.length - 2] == 4) {
-        pdf.setColor(pdf.anterior)
+        pdf.setColor(pdf.anterior);
       }
       pdf.setBrushSize(3);
       event.preventDefault();
@@ -406,7 +415,7 @@
     function enablePencil2(event) {
       pdf.setBrushSize(10);
       pdf.anterior = pdf.color;
-      pdf.setColor('rgba(255, 255, 0, 0.4)');
+      pdf.setColor("rgba(255, 255, 0, 0.4)");
       event.preventDefault();
       changeActiveTool(event);
       pdf.enablePencil();
@@ -415,7 +424,7 @@
     //Activar el texto
     function enableAddText(event) {
       if (pdf.color[pdf.color.length - 2] == 4) {
-        pdf.setColor(pdf.anterior)
+        pdf.setColor(pdf.anterior);
       }
       event.preventDefault();
       changeActiveTool(event);
@@ -460,11 +469,8 @@
         pdf.setFontSize(font_size);
       });
     });
-
-
-
   </script>
-  <div class="toolbar">
+  <div class="toolbar" style="position: absolute; left: 0; margin-top: 800px;">
     <!--
       <div class="tool">
         <label for="">Tamaño del pincel</label>
@@ -473,45 +479,85 @@
       -->
     <!--Botones de colores-->
     <div class="tool">
-      <button class="color-tool active" style="background-color: rgba(33, 33, 33, 1)"></button>
-      <button class="color-tool" style="background-color: rgba(255, 0, 0, 1)"></button>
-      <button class="color-tool" style="background-color: rgba(0, 0, 255, 1)"></button>
-      <button class="color-tool" style="background-color: rgba(0, 128, 0, 1)"></button>
-      <button class="color-tool" style="background-color: rgba(255, 255, 0, 1)"></button>
+      <button
+        class="color-tool active"
+        style="background-color: rgba(33, 33, 33, 1)"
+      ></button>
+      <button
+        class="color-tool"
+        style="background-color: rgba(255, 0, 0, 1)"
+      ></button>
+      <button
+        class="color-tool"
+        style="background-color: rgba(0, 0, 255, 1)"
+      ></button>
+      <button
+        class="color-tool"
+        style="background-color: rgba(0, 128, 0, 1)"
+      ></button>
+      <button
+        class="color-tool"
+        style="background-color: rgba(255, 255, 0, 1)"
+      ></button>
     </div>
     <!--Herramienta de lapiz-->
     <div class="tool">
       <button class="tool-button">
-        <i class="fa fa-pencil" title="Pencil" onclick="enablePencil1(event)"></i>
+        <i
+          class="fa fa-pencil"
+          title="Pencil"
+          onclick="enablePencil1(event)"
+        ></i>
       </button>
     </div>
     <!--Herramienta de lapiz (Resaltador)-->
     <div class="tool">
       <button class="tool-button">
-        <i class="fa fa-paint-brush" title="Highlighter" onclick="enablePencil2(event)"></i>
+        <i
+          class="fa fa-paint-brush"
+          title="Highlighter"
+          onclick="enablePencil2(event)"
+        ></i>
       </button>
     </div>
     <!--Herramienta de añadir texto-->
     <div class="tool">
       <button class="tool-button">
-        <i class="fa fa-font" title="Add Text" onclick="enableAddText(event)"></i>
+        <i
+          class="fa fa-font"
+          title="Add Text"
+          onclick="enableAddText(event)"
+        ></i>
       </button>
     </div>
     <!--Opción mano libre-->
     <div class="tool">
-      <button class="tool-button active"><i class="fa fa-hand-paper-o" title="Free Hand"
-          onclick="enableSelector(event)"></i></button>
+      <button class="tool-button active">
+        <i
+          class="fa fa-hand-paper-o"
+          title="Free Hand"
+          onclick="enableSelector(event)"
+        ></i>
+      </button>
     </div>
     <!--Erase-->
     <div class="tool">
-      <button class="btn btn-danger btn-sm" onclick="deleteSelectedObject(event)">
-        <i class="fa fa-eraser" title="Free Hand" onclick="enableSelector(event)"></i>
+      <button
+        class="btn btn-danger btn-sm"
+        onclick="deleteSelectedObject(event)"
+      >
+        <i
+          class="fa fa-eraser"
+          title="Free Hand"
+          onclick="enableSelector(event)"
+        ></i>
       </button>
     </div>
-
+    <!--
     <div class="tool">
       <button class="btn btn-light btn-sm" onclick="savePDF()"><i class="fa fa-save"></i> Save</button>
     </div>
+    -->
 
     <!--Clear Page-->
     <!--
@@ -521,8 +567,8 @@
         </button>
       </div>
       -->
-    <!--Inicio de la zona donde se muestra el pdf-->
-    <div id="pdf-container" style="max-height: 590px; overflow-y: auto;"></div>
-    <!--Fin de la zona donde se muestra el pdf-->
-
+  </div>
+  <!--Inicio de la zona donde se muestra el pdf-->
+  <div id="pdf-container" style="max-height: 590px; overflow-y: auto; position: absolute; left: 0; margin-top: 860px; z-index: 1;"></div>
+  <!--Fin de la zona donde se muestra el pdf-->
 </body>
