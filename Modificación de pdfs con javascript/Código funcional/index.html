@@ -280,7 +280,7 @@
             fabricObj.renderAll.bind(fabricObj)
           );
           //Añdir objetos tipo texto haciendo click
-          $(fabricObj.upperCanvasEl).click(function (event) {
+          $(fabricObj.upperCanvasEl).on('click touchstart', function (event) {
             current_PDFAnnotate.active_canvas = index;
             current_PDFAnnotate.fabricClickHandler(event, fabricObj);
           });
@@ -303,14 +303,22 @@
       //Función para añadir los objetos tipo texto y el borrador
       this.fabricClickHandler = function (event, fabricObj) {
         var current_PDFAnnotate = this;
+
+        // Obtener las coordenadas del evento (clic o toque)
+        var x, y;
+        if (event.type === 'click') {
+          x = event.clientX;
+          y = event.clientY;
+        } else if (event.type === 'touchstart') {
+          // Obtener la primera posición de toque
+          x = event.touches[0].clientX;
+          y = event.touches[0].clientY;
+        }
+
         if (current_PDFAnnotate.active_tool == 2) {
           var text = new fabric.IText("Escribe acá", {
-            left:
-              event.clientX -
-              fabricObj.upperCanvasEl.getBoundingClientRect().left,
-            top:
-              event.clientY -
-              fabricObj.upperCanvasEl.getBoundingClientRect().top,
+            left: x - fabricObj.upperCanvasEl.getBoundingClientRect().left,
+            top: y - fabricObj.upperCanvasEl.getBoundingClientRect().top,
             fill: current_PDFAnnotate.color,
             fontSize: current_PDFAnnotate.font_size,
             selectable: true
