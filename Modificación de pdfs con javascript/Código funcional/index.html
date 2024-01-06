@@ -1,28 +1,28 @@
-<body>
+<div>
+  <!-- Importación de estilos Bootstrap -->
   <link
     rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
     crossorigin="anonymous"
   />
+
+  <!-- Importación de prettify (Aún en duda si es necesario)-->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css"
   />
+
+  <!-- Importación de font-awesome, para los íconos (Comentar en producción)-->
   <!--
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-  />-->
-
+  />
+  -->
+  <!-- Estilos usados declarados explicitamente -->
   <style>
-    canvas,
-    .canvas-container {
-      -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-      -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-      box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-    }
-
+    /* CSS de la barra de herramientas */
     .toolbar {
       width: 100%;
       background-color: rgb(50, 54, 57);
@@ -32,16 +32,19 @@
       z-index: 10;
     }
 
+    /* CSS para el contenedor del pdf */
     #pdf-container {
       margin-top: 0px;
       padding-left: 0px;
       text-align: center;
     }
 
+    /* Estilización para todos los botones */
     button:focus {
       outline: 0;
     }
 
+    /* CSS de los contenedores de los botones dentro de la barra de herramientas */
     .toolbar .tool {
       display: inline-block;
       color: #fff;
@@ -51,19 +54,7 @@
       margin-right: 5px;
     }
 
-    .toolbar .tool label,
-    .toolbar .tool select,
-    .toolbar .tool input {
-      display: inline-block;
-      width: auto;
-      height: auto !important;
-      padding: 0;
-    }
-
-    .toolbar .tool input {
-      width: 50px;
-    }
-
+    /* CSS's para los botones de colores de la barra de herramientas */
     .toolbar .tool .color-tool {
       height: 25px;
       width: 25px;
@@ -79,10 +70,14 @@
       box-shadow: 3px 4px 5px 0px rgba(255, 255, 255, 1);
     }
 
+    /* Necesaria para el botón de guardar */
+    /*
     .toolbar .tool:nth-last-child(1) {
       float: right;
     }
+  */
 
+    /* CSS's para los botones dentro de la barra de herramientas (Exceptuando los de colores) */
     .toolbar .tool .tool-button {
       background-color: rgb(50, 54, 57);
       border: 1px solid rgb(50, 54, 57);
@@ -92,44 +87,91 @@
 
     .toolbar .tool .tool-button:hover,
     .toolbar .tool .tool-button.active {
-      background-color: rgb(82, 86, 89);
-      border-color: rgb(82, 86, 89);
+      /*background-color: rgb(82, 86, 89);
+      border-color: rgb(82, 86, 89);*/
+      background-color: rgb(184, 184, 95);
+      border-color: rgb(184, 184, 95);
     }
 
+    /* Define un pequeño margen al final de cada página del pdf */
     canvas,
     .canvas-container {
       margin-bottom: 25px;
     }
 
+    /* Centra cada uno de los canvas dentro del contenedor */
     .canvas-container {
       margin-left: auto;
       margin-right: auto;
     }
+
+    /* Cambios en la toolbar en pantallas pequeñas */
+    @media (max-width: 549px) {
+      .toolbar {
+        height: 100px;
+      }
+      .toolbar .tool {
+        height: 50%;
+      }
+    }
   </style>
+
+  <!-- Importación de la biblioteca jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <!-- Importación de la biblioteca PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
+
+  <!--
+  El fragmento de código JavaScript que proporcionaste se utiliza para configurar la ubicación del archivo 
+  pdf.worker.min.js necesario para el correcto funcionamiento de la biblioteca PDF.js en el navegador.
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc: Esta línea de código está configurando la ubicación del archivo 
+  pdf.worker.min.js que es requerido por PDF.js para procesar y renderizar archivos PDF en el navegador.
+
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js": Esta URL especifica la ubicación en 
+  línea del archivo pdf.worker.min.js necesario para PDF.js. Se está cargando desde el servidor de Cloudflare.
+  -->
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js";
   </script>
+
+  <!-- Importación de la biblioteca Fabric.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
+
+  <!-- Importación de la biblioteca jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.2.0/jspdf.umd.min.js"></script>
+
   <script>
-    //Función principal encargada de mostrar el pdf y ofrecer las funciones (Será llamada más adelante)
+    /* Constructor del objeto PDFAnnotate, encargado de mostrar el pdf y ofrecer las funciones */
+    /*
+    container_id: id del elemento contenedor HTML
+    url: url del pdf que se va a mostrar
+    options: objeto de opciones de configuración adicionales
+  */
     var PDFAnnotate = function (container_id, url, options = {}) {
       //Variables de la función
       this.number_of_pages = 0;
       this.pages_rendered = 0;
-      this.active_tool = 1;
+      this.active_tool = 0;
       this.fabricObjects = [];
       this.fabricObjectsData = [];
       this.color = "rgba(33, 33, 33, 1)";
-      this.font_size = 16;
+      this.font_size = 25;
       this.active_canvas = 0;
       this.container_id = container_id;
       this.url = url;
       this.anterior = "rgba(33, 33, 33, 1)";
-      var inst = this;
+      this.resaltador_last = false
+
+      //Variables de estado las herramientas
+      //this.second_click_pencil1 = false;
+      //this.second_click_pencil2 = false;
+      //this.second_click_text = false;
+
+      // Variable que hace referencia al objeto actual PDFAnnotate
+      var current_PDFAnnotate = this;
 
       //Establece un nivel de compresión del documento
       if (options.pageImageCompression) {
@@ -152,14 +194,17 @@
             scale = 1.3;
           }
 
-          inst.number_of_pages = pdf.numPages;
+          //Número de páginas del pdf
+          current_PDFAnnotate.number_of_pages = pdf.numPages;
 
           //Renderización página por página del documento en un canvas dentro del HTML
           for (var i = 1; i <= pdf.numPages; i++) {
             pdf.getPage(i).then(function (page) {
               var viewport = page.getViewport({ scale: scale });
               var canvas = document.createElement("canvas");
-              document.getElementById(inst.container_id).appendChild(canvas);
+              document
+                .getElementById(current_PDFAnnotate.container_id)
+                .appendChild(canvas);
               canvas.className = "pdf-canvas";
               canvas.height = viewport.height;
               canvas.width = viewport.width;
@@ -176,9 +221,12 @@
                 $(".pdf-canvas").each(function (index, el) {
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
-                inst.pages_rendered++;
-                if (inst.pages_rendered == inst.number_of_pages)
-                  inst.initFabric();
+                current_PDFAnnotate.pages_rendered++;
+                if (
+                  current_PDFAnnotate.pages_rendered ==
+                  current_PDFAnnotate.number_of_pages
+                )
+                  current_PDFAnnotate.initFabric();
               });
             });
           }
@@ -191,8 +239,8 @@
 
       //Se inicializa el objeto de la biblioteca fabric.js para cada página renderizada del pdf.
       this.initFabric = function () {
-        var inst = this;
-        let canvases = $("#" + inst.container_id + " canvas");
+        var current_PDFAnnotate = this;
+        let canvases = $("#" + current_PDFAnnotate.container_id + " canvas");
 
         canvases.each(function (index, el) {
           var background = el.toDataURL("image/png");
@@ -200,21 +248,29 @@
           //Se establece el objeto del pincel para cada página del pdf
           var fabricObj = new fabric.Canvas(el.id, {
             freeDrawingBrush: {
-              width: 1,
-              color: inst.color,
+              width: 3,
+              color: current_PDFAnnotate.color,
             },
+            isDrawingMode: true,
           });
-          inst.fabricObjects.push(fabricObj);
+          current_PDFAnnotate.fabricObjects.push(fabricObj);
+
+          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+            fabricObj.freeDrawingBrush.width = 3;
+          });
 
           //Guarda los objetos creados dentro cada página
           if (typeof options.onPageUpdated == "function") {
             fabricObj.on("object:added", function () {
-              var oldValue = Object.assign({}, inst.fabricObjectsData[index]);
-              inst.fabricObjectsData[index] = fabricObj.toJSON();
+              var oldValue = Object.assign(
+                {},
+                current_PDFAnnotate.fabricObjectsData[index]
+              );
+              current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
               options.onPageUpdated(
                 index + 1,
                 oldValue,
-                inst.fabricObjectsData[index]
+                current_PDFAnnotate.fabricObjectsData[index]
               );
             });
           }
@@ -225,12 +281,12 @@
           );
           //Añdir objetos tipo texto haciendo click
           $(fabricObj.upperCanvasEl).click(function (event) {
-            inst.active_canvas = index;
-            inst.fabricClickHandler(event, fabricObj);
+            current_PDFAnnotate.active_canvas = index;
+            current_PDFAnnotate.fabricClickHandler(event, fabricObj);
           });
           //Esto garantiza que cualquier cambio que se haga en el lienzo se guarde.
           fabricObj.on("after:render", function () {
-            inst.fabricObjectsData[index] = fabricObj.toJSON();
+            current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
             fabricObj.off("after:render");
           });
 
@@ -244,54 +300,76 @@
         });
       };
 
-      //Función para añadir los objetos tipo texto
+      //Función para añadir los objetos tipo texto y el borrador
       this.fabricClickHandler = function (event, fabricObj) {
-        var inst = this;
-        if (inst.active_tool == 2) {
-          var text = new fabric.IText("Sample text", {
+        var current_PDFAnnotate = this;
+        if (current_PDFAnnotate.active_tool == 2) {
+          var text = new fabric.IText("Escribe acá", {
             left:
               event.clientX -
               fabricObj.upperCanvasEl.getBoundingClientRect().left,
             top:
               event.clientY -
               fabricObj.upperCanvasEl.getBoundingClientRect().top,
-            fill: inst.color,
-            fontSize: inst.font_size,
-            selectable: true,
+            fill: current_PDFAnnotate.color,
+            fontSize: current_PDFAnnotate.font_size,
+            selectable: true
           });
           fabricObj.add(text);
-          inst.active_tool = 0;
+          current_PDFAnnotate.active_tool = 0;
+          var boton = document.getElementById("hand");
+          boton.click();
+        }else{
+          if(current_PDFAnnotate.active_tool == 3){
+            var targetObject = fabricObj.findTarget(event, { includeDefaultValues: false });
+            if (targetObject) {
+              // Eliminar el objeto del lienzo
+              fabricObj.remove(targetObject);
+            }
+            //current_PDFAnnotate.active_tool = 0; // Cambiar la herramienta activa
+            //var boton = document.getElementById("hand");
+            //boton.click(); // Simular un clic en el botón "hand" u otra acción que desees
+          }
         }
       };
     };
 
     //Función que habilita la herramienta de selección
     PDFAnnotate.prototype.enableSelector = function () {
-      var inst = this;
-      inst.active_tool = 0;
-      if (inst.fabricObjects.length > 0) {
-        $.each(inst.fabricObjects, function (index, fabricObj) {
+      var current_PDFAnnotate = this;
+      current_PDFAnnotate.active_tool = 0;
+      if (current_PDFAnnotate.fabricObjects.length > 0) {
+
+        
+      for (var i = 0; i < current_PDFAnnotate.fabricObjects.length; i++) {
+        current_PDFAnnotate.fabricObjects[i].isDrawingMode = false;
+        current_PDFAnnotate.fabricObjects[i].selectable = true;
+      }
+      /*
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
           fabricObj.isDrawingMode = false;
-        });
+          fabricObj.selectable = true;
+        });*/
       }
     };
 
     //Función que habilita la herramienta del lapiz
     PDFAnnotate.prototype.enablePencil = function () {
-      var inst = this;
-      inst.active_tool = 1;
-      if (inst.fabricObjects.length > 0) {
-        $.each(inst.fabricObjects, function (index, fabricObj) {
+      var current_PDFAnnotate = this;
+      current_PDFAnnotate.active_tool = 1;
+      if (current_PDFAnnotate.fabricObjects.length > 0) {
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
           fabricObj.isDrawingMode = true;
         });
       }
     };
+
     //Función que habilita la herramienta de añadir texto
     PDFAnnotate.prototype.enableAddText = function () {
-      var inst = this;
-      inst.active_tool = 2;
-      if (inst.fabricObjects.length > 0) {
-        $.each(inst.fabricObjects, function (index, fabricObj) {
+      var current_PDFAnnotate = this;
+      current_PDFAnnotate.active_tool = 2;
+      if (current_PDFAnnotate.fabricObjects.length > 0) {
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
           fabricObj.isDrawingMode = false;
         });
       }
@@ -299,24 +377,24 @@
 
     //Función que habilita la opción de eliminar objetos
     PDFAnnotate.prototype.deleteSelectedObject = function () {
-      var inst = this;
-      var activeObject =
-        inst.fabricObjects[inst.active_canvas].getActiveObject();
-      if (activeObject) {
-        if (confirm("¿Estas seguro?"))
-          inst.fabricObjects[inst.active_canvas].remove(activeObject);
+      var current_PDFAnnotate = this;
+      current_PDFAnnotate.active_tool = 3;
+      if (current_PDFAnnotate.fabricObjects.length > 0) {
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+          fabricObj.isDrawingMode = false;
+        });
       }
     };
 
     //Función que permite guardar el pdf
     PDFAnnotate.prototype.savePdf = function (fileName) {
-      var inst = this;
+      var current_PDFAnnotate = this;
       var doc = new jspdf.jsPDF();
       if (typeof fileName === "undefined") {
         fileName = `${new Date().getTime()}.pdf`;
       }
 
-      inst.fabricObjects.forEach(function (fabricObj, index) {
+      current_PDFAnnotate.fabricObjects.forEach(function (fabricObj, index) {
         if (index != 0) {
           doc.addPage();
           doc.setPage(index + 1);
@@ -325,17 +403,19 @@
           fabricObj.toDataURL({
             format: "png",
           }),
-          inst.pageImageCompression == "NONE" ? "PNG" : "JPEG",
+          current_PDFAnnotate.pageImageCompression == "NONE" ? "PNG" : "JPEG",
           0,
           0,
           doc.internal.pageSize.getWidth(),
           doc.internal.pageSize.getHeight(),
           `page-${index + 1}`,
-          ["FAST", "MEDIUM", "SLOW"].indexOf(inst.pageImageCompression) >= 0
-            ? inst.pageImageCompression
+          ["FAST", "MEDIUM", "SLOW"].indexOf(
+            current_PDFAnnotate.pageImageCompression
+          ) >= 0
+            ? current_PDFAnnotate.pageImageCompression
             : undefined
         );
-        if (index === inst.fabricObjects.length - 1) {
+        if (index === current_PDFAnnotate.fabricObjects.length - 1) {
           doc.save(fileName);
         }
       });
@@ -343,18 +423,18 @@
 
     //Modifica el tamaño del pincel
     PDFAnnotate.prototype.setBrushSize = function (size) {
-      var inst = this;
-      $.each(inst.fabricObjects, function (index, fabricObj) {
+      var current_PDFAnnotate = this;
+      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
         fabricObj.freeDrawingBrush.width = size;
       });
     };
 
     //Modifica el color
     PDFAnnotate.prototype.setColor = function (color) {
-      var inst = this;
-      inst.color = color;
-      $.each(inst.fabricObjects, function (index, fabricObj) {
-        fabricObj.freeDrawingBrush.color = inst.color;
+      var current_PDFAnnotate = this;
+      current_PDFAnnotate.color = color;
+      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+        fabricObj.freeDrawingBrush.color = current_PDFAnnotate.color;
       });
     };
 
@@ -365,8 +445,9 @@
 
     //Limpiar la página
     PDFAnnotate.prototype.clearActivePage = function () {
-      var inst = this;
-      var fabricObj = inst.fabricObjects[inst.active_canvas];
+      var current_PDFAnnotate = this;
+      var fabricObj =
+        current_PDFAnnotate.fabricObjects[current_PDFAnnotate.active_canvas];
       var bg = fabricObj.backgroundImage;
       if (confirm("Are you sure?")) {
         fabricObj.clear();
@@ -375,20 +456,28 @@
     };
 
     //Llamada de la función principal
-    var pdf = new PDFAnnotate("pdf-container", "/images/libros-estudiantes/primero_estudiante_plataforma.pdf", {
-    //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
-      ready() {
-        console.log("Plugin initialized successfully");
-      },
-      scale: 1.5,
-      pageImageCompression: "MEDIUM", // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
-    });
+    var pdf = new PDFAnnotate(
+      "pdf-container",
+      "/images/libros-estudiantes/primero_estudiante_plataforma.pdf",
+      {
+        //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
+        ready() {
+          console.log("Plugin initialized successfully");
+        },
+        //Escala del pdf (Es lo que hay que modificar)
+        scale: params(),
+        //scale: 0.5,
+        pageImageCompression: "MEDIUM", // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
+      }
+    );
 
     //Función que cambia la herramienta activa
     function changeActiveTool(event) {
-      var element = $(event.target).hasClass("tool-button")
-        ? $(event.target)
-        : $(event.target).parents(".tool-button").first();
+      if ($(event.target).hasClass("tool-button")) {
+        element = $(event.target);
+      } else {
+        element = $(event.target).parents(".tool-button").first();
+      }
       $(".tool-button.active").removeClass("active");
       $(element).addClass("active");
     }
@@ -402,8 +491,9 @@
 
     //Activar el pincel normal
     function enablePencil1(event) {
-      if (pdf.color[pdf.color.length - 2] == 4) {
-        pdf.setColor(pdf.anterior);
+      if(pdf.resaltador_last){
+        pdf.resaltador_last = false
+        pdf.setColor(pdf.anterior)
       }
       pdf.setBrushSize(3);
       event.preventDefault();
@@ -414,7 +504,10 @@
     //Activar el pincel subrayado
     function enablePencil2(event) {
       pdf.setBrushSize(10);
-      pdf.anterior = pdf.color;
+      if(pdf.color != "rgba(255, 255, 0, 0.4)"){
+        pdf.anterior = pdf.color;
+      }
+      pdf.resaltador_last = true
       pdf.setColor("rgba(255, 255, 0, 0.4)");
       event.preventDefault();
       changeActiveTool(event);
@@ -423,8 +516,9 @@
 
     //Activar el texto
     function enableAddText(event) {
-      if (pdf.color[pdf.color.length - 2] == 4) {
-        pdf.setColor(pdf.anterior);
+      if(pdf.resaltador_last){
+        pdf.resaltador_last = false
+        pdf.setColor(pdf.anterior)
       }
       event.preventDefault();
       changeActiveTool(event);
@@ -448,7 +542,17 @@
       pdf.clearActivePage();
     }
 
-    //Inicializador de ls opciones de cambio de tamaño de lápiz, texto y selección de color
+    //Acceder a los parámetros del tamaño de la pantalla y del ancho del contenedor padre
+    function params(idElemento) {
+      //var ancho_elemento = document.getElementById(idElemento).offsetWidth;
+      //var ancho_pantalla = window.innerWidth;
+      //alert(str("Ancho de la pantalla: " + window.innerWidth))
+      //console.log(document.getElementById(idElemento).offsetWidth);
+      //console.log(window.innerWidth);
+      return 0.0010277492291880781 * window.innerWidth + 0.09609455292908531;
+    }
+
+    //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
     $(function () {
       $(".color-tool").click(function () {
         if (pdf.color[pdf.color.length - 2] != 4) {
@@ -470,107 +574,93 @@
       });
     });
   </script>
-  <div class="toolbar" style="position: absolute; left: 0; margin-top: 800px;">
-    <!--
+  <!--<div style="margin-top: 600px; position: absolute; left: 0; z-index: 100; margin-bottom: 100px;">-->
+  <div>
+    <div id="barra-herramientas" class="toolbar">
+      <!--Botones de colores-->
       <div class="tool">
-        <label for="">Tamaño del pincel</label>
-        <input type="number" class="form-control text-right" value="1" id="brush-size" max="50">
+        <button
+          class="color-tool active"
+          style="background-color: rgba(33, 33, 33, 1)"
+        ></button>
+        <button
+          class="color-tool"
+          style="background-color: rgba(255, 0, 0, 1)"
+        ></button>
+        <button
+          class="color-tool"
+          style="background-color: rgba(0, 0, 255, 1)"
+        ></button>
+        <!--
+        <button
+          class="color-tool"
+          style="background-color: rgba(0, 128, 0, 1)"
+        ></button>
+        <button
+          class="color-tool"
+          style="background-color: rgba(255, 255, 0, 1)"
+        ></button>
+        -->
       </div>
-      -->
-    <!--Botones de colores-->
-    <div class="tool">
-      <button
-        class="color-tool active"
-        style="background-color: rgba(33, 33, 33, 1)"
-      ></button>
-      <button
-        class="color-tool"
-        style="background-color: rgba(255, 0, 0, 1)"
-      ></button>
-      <button
-        class="color-tool"
-        style="background-color: rgba(0, 0, 255, 1)"
-      ></button>
-      <button
-        class="color-tool"
-        style="background-color: rgba(0, 128, 0, 1)"
-      ></button>
-      <button
-        class="color-tool"
-        style="background-color: rgba(255, 255, 0, 1)"
-      ></button>
-    </div>
-    <!--Herramienta de lapiz-->
-    <div class="tool">
-      <button class="tool-button">
-        <i
-          class="fa fa-pencil"
-          title="Pencil"
-          onclick="enablePencil1(event)"
-        ></i>
-      </button>
-    </div>
-    <!--Herramienta de lapiz (Resaltador)-->
-    <div class="tool">
-      <button class="tool-button">
-        <i
-          class="fa fa-paint-brush"
-          title="Highlighter"
-          onclick="enablePencil2(event)"
-        ></i>
-      </button>
-    </div>
-    <!--Herramienta de añadir texto-->
-    <div class="tool">
-      <button class="tool-button">
-        <i
-          class="fa fa-font"
-          title="Add Text"
-          onclick="enableAddText(event)"
-        ></i>
-      </button>
-    </div>
-    <!--Opción mano libre-->
-    <div class="tool">
-      <button class="tool-button active">
-        <i
-          class="fa fa-hand-paper-o"
-          title="Free Hand"
+      <!--Herramienta de lapiz-->
+      <div class="tool">
+        <button id="pencil1" class="tool-button active" onclick="enablePencil1(event)">
+          <i class="fa fa-pencil" title="Pencil"></i>
+        </button>
+      </div>
+      <!--Herramienta de lapiz (Resaltador)-->
+      <div class="tool">
+        <button id="pencil2" class="tool-button" onclick="enablePencil2(event)">
+          <i class="fa fa-paint-brush" title="Highlighter"></i>
+        </button>
+      </div>
+      <!--Herramienta de añadir texto-->
+      <div class="tool">
+        <button id="text" class="tool-button" onclick="enableAddText(event)">
+          <i class="fa fa-font" title="Add Text"></i>
+        </button>
+      </div>
+      <!--Opción mano libre-->
+      <div class="tool" style="display: none;">
+        <button
+          id="hand"
+          class="tool-button"
           onclick="enableSelector(event)"
-        ></i>
-      </button>
-    </div>
-    <!--Erase-->
-    <div class="tool">
-      <button
-        class="btn btn-danger btn-sm"
-        onclick="deleteSelectedObject(event)"
-      >
-        <i
-          class="fa fa-eraser"
-          title="Free Hand"
-          onclick="enableSelector(event)"
-        ></i>
-      </button>
-    </div>
-    <!--
+        >
+          <i class="fa fa-hand-paper-o" title="Free Hand"></i>
+        </button>
+      </div>
+      <!--Erase-->
+      <div class="tool">
+        <button
+          class="btn btn-danger btn-sm"
+          onclick="deleteSelectedObject(event)"
+        >
+          <i class="fa fa-eraser" title="Free Hand"></i>
+        </button>
+      </div>
+
+      <!--
+
     <div class="tool">
       <button class="btn btn-light btn-sm" onclick="savePDF()">
         <i class="fa fa-save"></i> Save
       </button>
     </div>
+
     -->
 
-    <!--Clear Page-->
-    <!--
+      <!--Clear Page-->
+      <!--
       <div class="tool">
         <button class="btn btn-danger btn-sm" onclick="clearPage()">
           Clear Page
         </button>
       </div>
       -->
+    </div>
+    <!--Inicio de la zona donde se muestra el pdf-->
+    <div id="pdf-container" style="max-height: 600px; overflow-y: auto"></div>
+    <!--Fin de la zona donde se muestra el pdf-->
   </div>
-  <!--Inicio de la zona donde se muestra el pdf-->
-  <div id="pdf-container" style="max-height: 600px; overflow-y: auto"></div>
-  <!--Fin de la zona donde se muestra el pdf-->
-</body>
+</div>
