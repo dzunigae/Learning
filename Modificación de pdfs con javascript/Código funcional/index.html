@@ -555,6 +555,39 @@
       return 0.0010277492291880781 * window.innerWidth + 0.09609455292908531;
     }
 
+    //Simulación de la rueda del ratón
+    var pdfContainer = document.getElementById('pdf-container');
+    var initialDistance = null;
+
+    pdfContainer.addEventListener('touchstart', function(event) {
+      if (event.touches.length === 2) {
+        initialDistance = getDistance(event.touches[0], event.touches[1]);
+      }
+    });
+
+    pdfContainer.addEventListener('touchmove', function(event) {
+      if (event.touches.length === 2 && initialDistance !== null) {
+        var currentDistance = getDistance(event.touches[0], event.touches[1]);
+        var delta = currentDistance - initialDistance;
+
+        // Simular el desplazamiento de la barra ajustando la posición de acuerdo con el delta
+        pdfContainer.scrollTop += delta;
+
+        // Actualizar la distancia inicial para el siguiente movimiento
+        initialDistance = currentDistance;
+      }
+    });
+
+    pdfContainer.addEventListener('touchend', function(event) {
+      initialDistance = null;
+    });
+
+    function getDistance(touch1, touch2) {
+      var dx = touch1.clientX - touch2.clientX;
+      var dy = touch1.clientY - touch2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
     //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
     $(function () {
       $(".color-tool").click(function () {
