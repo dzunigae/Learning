@@ -251,7 +251,9 @@
               width: 3,
               color: current_PDFAnnotate.color,
             },
-            isDrawingMode: true,
+            isDrawingMode: false,
+            selection: false,
+            lockMovementX: false
           });
           current_PDFAnnotate.fabricObjects.push(fabricObj);
 
@@ -353,11 +355,6 @@
         current_PDFAnnotate.fabricObjects[i].isDrawingMode = false;
         current_PDFAnnotate.fabricObjects[i].selectable = true;
       }
-      /*
-        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-          fabricObj.isDrawingMode = false;
-          fabricObj.selectable = true;
-        });*/
       }
     };
 
