@@ -16,6 +16,7 @@
       margin-top: 0px;
       padding-left: 0px;
       text-align: center;
+      overflow: auto;
     }
 
     /* Estilización para todos los botones */
@@ -194,7 +195,7 @@
       <div class="tool">
         <button
           class="btn btn-danger btn-sm"
-          onclick="deshabilitarfabric(event)"
+          onclick="deshabilitarfabric()"
         >
         <i class="fa fa-hand-paper-o" title="Free Hand"></i>
         </button>
@@ -306,18 +307,18 @@
 
           //Se establece el objeto del pincel para la página en específico del pdf
           var fabricObj = new fabric.Canvas(el.id, {
-            //freeDrawingBrush: {
-            //  width: 3,
-            //  color: current_PDFAnnotate.color,
-            //},
-            //isDrawingMode: true
+            freeDrawingBrush: {
+              width: 3,
+              color: current_PDFAnnotate.color,
+            },
+            isDrawingMode: true
           });
           current_PDFAnnotate.fabricObjects.push(fabricObj);
 
           //¿Aumenta el ancho ya establecido?
-          //$.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-          //  fabricObj.freeDrawingBrush.width = 3;
-          //});
+          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+            fabricObj.freeDrawingBrush.width = 3;
+          });
 
           fabricObj.setBackgroundImage(
             background,
@@ -327,6 +328,11 @@
           //Guarda los objetos creados dentro cada página
           //console.log(typeof options.onPageUpdated == "function");
           //if (typeof options.onPageUpdated == "function") {}
+
+          //Finaliza exitosamente el renderizado
+          if (index === canvases.length - 1 && typeof options.ready === "function") {
+            options.ready();
+          }
         });
       }
     };
@@ -340,11 +346,11 @@
         fabricObj.forEachObject(function(obj) {
             obj.selectable = false; // Deshabilita la interactividad con los objetos existentes
         });
-      })
+      });
     };
 
     //Entrada al pdf
-    var render_pdf = PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
+    var render_pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
     //var render_pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
       ready() {
         console.log("Plugin initialized successfully");
@@ -361,9 +367,18 @@
     }
 
     //Deshabilitar fabric
-    function deshabilitarfabric(event){
-      event.preventDefault();
+    function deshabilitarfabric(){
+      //event.preventDefault();
       render_pdf.deshabfabric();
+      document.getElementById('barra-herramientas').style.backgroundColor = 'red';
+      var hijos = document.getElementById('pdf-container').children;
+      for (var i = 0; i < hijos.length; i++) {
+          hijo_de_hijo = hijos[i].children;
+          hijo_a_eliminar = hijo_de_hijo[1];
+          if(hijo_a_eliminar){
+            hijos.removeChild(hijo_a_eliminar)
+          }
+      }
     }
   </script>
 </div>
