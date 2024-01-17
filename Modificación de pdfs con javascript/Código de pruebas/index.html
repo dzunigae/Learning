@@ -113,7 +113,7 @@
   />
 
   <!-- font-awesome (Comentar en producción) -->
-  <link
+  <!--<link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
@@ -279,9 +279,9 @@
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
                 current_PDFAnnotate.pages_rendered++;
-                if(current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
-                  current_PDFAnnotate.initFabric();
-                }
+                //if(current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
+                //  current_PDFAnnotate.initFabric();
+                //}
               });
             });
           }
@@ -350,8 +350,8 @@
     };
 
     //Entrada al pdf
-    var render_pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
-    //var render_pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
+    //var render_pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
+    var render_pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
       ready() {
         console.log("Plugin initialized successfully");
       },
@@ -372,13 +372,17 @@
       render_pdf.deshabfabric();
       document.getElementById('barra-herramientas').style.backgroundColor = 'red';
       var hijos = document.getElementById('pdf-container').children;
+      console.log(typeof hijos[0]);
       for (var i = 0; i < hijos.length; i++) {
-          hijo_de_hijo = hijos[i].children;
-          hijo_a_eliminar = hijo_de_hijo[1];
-          if(hijo_a_eliminar){
-            hijos.removeChild(hijo_a_eliminar)
-          }
+          hijos_2 = hijos[i].children;
+          hijos[i].removeChild(hijos_2[1]);
+          //console.log(hijos_2[1])
       }
+
+
+      //Hay que añadir la opción correcta de touch a los canvas que quedan después de la eliminación
+    
+    
     }
   </script>
 </div>
