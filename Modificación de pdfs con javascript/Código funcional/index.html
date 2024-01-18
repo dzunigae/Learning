@@ -36,7 +36,7 @@
       margin-top: 0px;
       padding-left: 0px;
       text-align: center;
-      position: relative;
+      /*position: relative;*/
     }
 
     /* Estilización para todos los botones */
@@ -576,20 +576,29 @@
             hijos[i].removeChild(canvas[1]);
             canvas[0].style.touchAction = 'auto';
         };
-        //console.log(hijos[0])
-        while (hijos.length > 0){
-          canvas = hijos[0].children;
-          console.log(canvas[0]);
-          pdf_container.appendChild(canvas[0]);
+
+        var i = 0;
+
+        while(i < pdf.pages_rendered){
+          canvas = hijos[0].children[0];
+          pdf_container.appendChild(canvas);
           pdf_container.removeChild(hijos[0]);
+          i = i +1;
+        }
+
+        for (var i = 0; i < hijos.length; i++) {
+            hijos[i].style.position = 'relative';
+            hijos[i].style.left = '';
+            hijos[i].style.top = '';
         };
+        
         pdf.hab = false;
       }else{
         if (pdf.pages_rendered == pdf.number_of_pages){
           pdf.initFabric();
         }
-        document.getElementById('barra-herramientas').style.backgroundColor = 'black';
-        pdf.hab = true
+        document.getElementById('barra-herramientas').style.backgroundColor = 'rgb(50, 54, 57)';
+        pdf.hab = true;
       }
     }
 
