@@ -279,9 +279,9 @@
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
                 current_PDFAnnotate.pages_rendered++;
-                //if(current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
-                //  current_PDFAnnotate.initFabric();
-                //}
+                if(current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
+                  current_PDFAnnotate.initFabric();
+                }
               });
             });
           }
@@ -376,13 +376,8 @@
       for (var i = 0; i < hijos.length; i++) {
           hijos_2 = hijos[i].children;
           hijos[i].removeChild(hijos_2[1]);
-          //console.log(hijos_2[1])
+          hijos_2[0].style.touchAction = 'auto';
       }
-
-
-      //Hay que añadir la opción correcta de touch a los canvas que quedan después de la eliminación
-    
-    
     }
   </script>
 </div>
