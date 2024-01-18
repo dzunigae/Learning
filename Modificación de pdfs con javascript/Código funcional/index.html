@@ -14,12 +14,11 @@
   />
 
   <!-- Importación de font-awesome, para los íconos (Comentar en producción)-->
-  <!--
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
-  -->
+
   <!-- Estilos usados declarados explicitamente -->
   <style>
     /* CSS de la barra de herramientas */
@@ -37,6 +36,7 @@
       margin-top: 0px;
       padding-left: 0px;
       text-align: center;
+      position: relative;
     }
 
     /* Estilización para todos los botones */
@@ -163,7 +163,8 @@
       this.container_id = container_id;
       this.url = url;
       this.anterior = "rgba(33, 33, 33, 1)";
-      this.resaltador_last = false
+      this.resaltador_last = false;
+      this.hab = true;
 
       //Variables de estado las herramientas
       //this.second_click_pencil1 = false;
@@ -222,11 +223,9 @@
                   $(el).attr("id", "page-" + (index + 1) + "-canvas");
                 });
                 current_PDFAnnotate.pages_rendered++;
-                if (
-                  current_PDFAnnotate.pages_rendered ==
-                  current_PDFAnnotate.number_of_pages
-                )
+                if (current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
                   current_PDFAnnotate.initFabric();
+                }
               });
             });
           }
@@ -458,11 +457,21 @@
       }
     };
 
+    //Deshabilitación de Fabric
+    PDFAnnotate.prototype.deshabfabric = function(){
+      var current_PDFAnnotate = this;
+      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+        fabricObj.isDrawingMode = false;
+        fabricObj.selection = false; // Deshabilita la selección de objetos
+        fabricObj.forEachObject(function(obj) {
+            obj.selectable = false; // Deshabilita la interactividad con los objetos existentes
+        });
+      });
+    };
+
     //Llamada de la función principal, declaración del objeto pdf
-    var pdf = new PDFAnnotate(
-      "pdf-container",
-      "/images/libros-estudiantes/primero_estudiante_plataforma.pdf",
-      {
+    var pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
+    //var pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
         //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
         ready() {
           console.log("Plugin initialized successfully");
@@ -555,6 +564,35 @@
       return 0.0010277492291880781 * window.innerWidth + 0.09609455292908531;
     }
 
+    //Deshabilitar fabric
+    function habilitarfabric(){
+      //pdf.deshabfabric();
+      if(pdf.hab == true){
+        document.getElementById('barra-herramientas').style.backgroundColor = 'red';
+        var pdf_container = document.getElementById('pdf-container');
+        var hijos = pdf_container.children;
+        for (var i = 0; i < hijos.length; i++) {
+            canvas = hijos[i].children;
+            hijos[i].removeChild(canvas[1]);
+            canvas[0].style.touchAction = 'auto';
+        };
+        //console.log(hijos[0])
+        while (hijos.length > 0){
+          canvas = hijos[0].children;
+          console.log(canvas[0]);
+          pdf_container.appendChild(canvas[0]);
+          pdf_container.removeChild(hijos[0]);
+        };
+        pdf.hab = false;
+      }else{
+        if (pdf.pages_rendered == pdf.number_of_pages){
+          pdf.initFabric();
+        }
+        document.getElementById('barra-herramientas').style.backgroundColor = 'black';
+        pdf.hab = true
+      }
+    }
+
     //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
     $(function () {
       $(".color-tool").click(function () {
@@ -640,6 +678,16 @@
           onclick="deleteSelectedObject(event)"
         >
           <i class="fa fa-eraser" title="Free Hand"></i>
+        </button>
+      </div>
+
+      <!--Deshabilitación de los fabric canvas-->
+      <div class="tool">
+        <button
+          class="btn btn-danger btn-sm"
+          onclick="habilitarfabric()"
+        >
+        <i class="fa fa-hand-paper-o" title="Free Hand"></i>
         </button>
       </div>
 
