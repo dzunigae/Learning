@@ -14,7 +14,7 @@
   />
 
   <!-- Importación de font-awesome, para los íconos (Comentar en producción)-->
-  <link
+  <!--<link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
@@ -470,8 +470,8 @@
     };
 
     //Llamada de la función principal, declaración del objeto pdf
-    var pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
-    //var pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
+    //var pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
+    var pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
         //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
         ready() {
           console.log("Plugin initialized successfully");
@@ -593,12 +593,15 @@
         };
         
         pdf.hab = false;
+
+        console.log(pdf.active_canvas);
       }else{
         if (pdf.pages_rendered == pdf.number_of_pages){
           pdf.initFabric();
         }
         document.getElementById('barra-herramientas').style.backgroundColor = 'rgb(50, 54, 57)';
         pdf.hab = true;
+        console.log(pdf.active_canvas);
       }
     }
 
@@ -691,6 +694,7 @@
       </div>
 
       <!--Deshabilitación de los fabric canvas-->
+      <!--
       <div class="tool">
         <button
           class="btn btn-danger btn-sm"
@@ -699,7 +703,7 @@
         <i class="fa fa-hand-paper-o" title="Free Hand"></i>
         </button>
       </div>
-
+      -->
       <!--
 
     <div class="tool">
