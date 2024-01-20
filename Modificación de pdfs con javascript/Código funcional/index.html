@@ -14,7 +14,8 @@
   />
 
   <!-- Importación de font-awesome, para los íconos (Comentar en producción)-->
-  <!--<link
+  <!--
+  <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
@@ -36,7 +37,6 @@
       margin-top: 0px;
       padding-left: 0px;
       text-align: center;
-      /*position: relative;*/
     }
 
     /* Estilización para todos los botones */
@@ -105,13 +105,21 @@
       margin-right: auto;
     }
 
+    .frame {
+      display: none;
+    }
+
     /* Cambios en la toolbar en pantallas pequeñas */
     @media (max-width: 549px) {
       .toolbar {
         height: 100px;
+        display: none;
       }
       .toolbar .tool {
         height: 50%;
+      }
+      .frame {
+        display: block;
       }
     }
   </style>
@@ -123,15 +131,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
 
   <!--
-  El fragmento de código JavaScript que proporcionaste se utiliza para configurar la ubicación del archivo 
-  pdf.worker.min.js necesario para el correcto funcionamiento de la biblioteca PDF.js en el navegador.
-
   pdfjsLib.GlobalWorkerOptions.workerSrc: Esta línea de código está configurando la ubicación del archivo 
-  pdf.worker.min.js que es requerido por PDF.js para procesar y renderizar archivos PDF en el navegador.
-
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js": Esta URL especifica la ubicación en 
-  línea del archivo pdf.worker.min.js necesario para PDF.js. Se está cargando desde el servidor de Cloudflare.
-  -->
+  pdf.worker.min.js que es requerido por PDF.js para procesar y renderizar archivos PDF en el navegador.-->
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js";
@@ -144,490 +145,487 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.2.0/jspdf.umd.min.js"></script>
 
   <script>
-    /* Constructor del objeto PDFAnnotate, encargado de mostrar el pdf y ofrecer las funciones */
-    /*
-    container_id: id del elemento contenedor HTML
-    url: url del pdf que se va a mostrar
-    options: objeto de opciones de configuración adicionales
-  */
-    var PDFAnnotate = function (container_id, url, options = {}) {
-      //Variables de la función
-      this.number_of_pages = 0;
-      this.pages_rendered = 0;
-      this.active_tool = 0;
-      this.fabricObjects = [];
-      this.fabricObjectsData = [];
-      this.color = "rgba(33, 33, 33, 1)";
-      this.font_size = 25;
-      this.active_canvas = 0;
-      this.container_id = container_id;
-      this.url = url;
-      this.anterior = "rgba(33, 33, 33, 1)";
-      this.resaltador_last = false;
-      this.hab = true;
+    if(window.innerWidth > 549){
+      /* Constructor del objeto PDFAnnotate, encargado de mostrar el pdf y ofrecer las funciones */
+      /*
+      container_id: id del elemento contenedor HTML
+      url: url del pdf que se va a mostrar
+      options: objeto de opciones de configuración adicionales
+      */
+      var PDFAnnotate = function (container_id, url, options = {}) {
+        //Variables de la función
+        this.number_of_pages = 0;
+        this.pages_rendered = 0;
+        this.active_tool = 0;
+        this.fabricObjects = [];
+        this.fabricObjectsData = [];
+        this.color = "rgba(33, 33, 33, 1)";
+        this.font_size = 25;
+        this.active_canvas = 0;
+        this.container_id = container_id;
+        this.url = url;
+        this.anterior = "rgba(33, 33, 33, 1)";
+        this.resaltador_last = false;
+        this.hab = true;
 
-      //Variables de estado las herramientas
-      //this.second_click_pencil1 = false;
-      //this.second_click_pencil2 = false;
-      //this.second_click_text = false;
+        // Variable que hace referencia al objeto actual PDFAnnotate
+        var current_PDFAnnotate = this;
 
-      // Variable que hace referencia al objeto actual PDFAnnotate
-      var current_PDFAnnotate = this;
+        //Establece un nivel de compresión del documento
+        if (options.pageImageCompression) {
+          this.pageImageCompression = options.pageImageCompression.toUpperCase();
+        } else {
+          this.pageImageCompression = "NONE";
+        }
 
-      //Establece un nivel de compresión del documento
-      if (options.pageImageCompression) {
-        this.pageImageCompression = options.pageImageCompression.toUpperCase();
-      } else {
-        this.pageImageCompression = "NONE";
-      }
+        //Carga el documento con una promesa
+        var loadingTask = pdfjsLib.getDocument(this.url);
 
-      //Carga el documento con una promesa
-      var loadingTask = pdfjsLib.getDocument(this.url);
+        //Código cuando la promesa se cumple satisfactoriamente
+        loadingTask.promise.then(
+          function (pdf) {
+            //Opción de escalamiento del pdf
+            var scale;
+            if (options.scale) {
+              scale = options.scale;
+            } else {
+              scale = 1.3;
+            }
 
-      //Código cuando la promesa se cumple satisfactoriamente
-      loadingTask.promise.then(
-        function (pdf) {
-          //Opción de escalamiento del pdf
-          var scale;
-          if (options.scale) {
-            scale = options.scale;
-          } else {
-            scale = 1.3;
-          }
+            //Número de páginas del pdf
+            current_PDFAnnotate.number_of_pages = pdf.numPages;
 
-          //Número de páginas del pdf
-          current_PDFAnnotate.number_of_pages = pdf.numPages;
+            //Renderización página por página del documento en un canvas dentro del HTML
+            for (var i = 1; i <= pdf.numPages; i++) {
+              pdf.getPage(i).then(function (page) {
+                var viewport = page.getViewport({ scale: scale });
+                var canvas = document.createElement("canvas");
+                document
+                  .getElementById(current_PDFAnnotate.container_id)
+                  .appendChild(canvas);
+                canvas.className = "pdf-canvas";
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                context = canvas.getContext("2d");
 
-          //Renderización página por página del documento en un canvas dentro del HTML
-          for (var i = 1; i <= pdf.numPages; i++) {
-            pdf.getPage(i).then(function (page) {
-              var viewport = page.getViewport({ scale: scale });
-              var canvas = document.createElement("canvas");
-              document
-                .getElementById(current_PDFAnnotate.container_id)
-                .appendChild(canvas);
-              canvas.className = "pdf-canvas";
-              canvas.height = viewport.height;
-              canvas.width = viewport.width;
-              context = canvas.getContext("2d");
+                var renderContext = {
+                  canvasContext: context,
+                  viewport: viewport,
+                };
+                var renderTask = page.render(renderContext);
 
-              var renderContext = {
-                canvasContext: context,
-                viewport: viewport,
-              };
-              var renderTask = page.render(renderContext);
-
-              //Se inicializa la biblioteca Fabric.js para poder generar anotaciones en el pdf
-              renderTask.promise.then(function () {
-                $(".pdf-canvas").each(function (index, el) {
-                  $(el).attr("id", "page-" + (index + 1) + "-canvas");
+                //Se inicializa la biblioteca Fabric.js para poder generar anotaciones en el pdf
+                renderTask.promise.then(function () {
+                  $(".pdf-canvas").each(function (index, el) {
+                    $(el).attr("id", "page-" + (index + 1) + "-canvas");
+                  });
+                  current_PDFAnnotate.pages_rendered++;
+                  if (current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
+                    current_PDFAnnotate.initFabric();
+                  }
                 });
-                current_PDFAnnotate.pages_rendered++;
-                if (current_PDFAnnotate.pages_rendered == current_PDFAnnotate.number_of_pages){
-                  current_PDFAnnotate.initFabric();
-                }
               });
-            });
+            }
+          },
+          //Si hay algún error, se imprime el error
+          function (reason) {
+            console.error(reason);
           }
-        },
-        //Si hay algún error, se imprime el error
-        function (reason) {
-          console.error(reason);
+        );
+
+        //Se inicializa el objeto de la biblioteca fabric.js para cada página renderizada del pdf.
+        this.initFabric = function () {
+          var current_PDFAnnotate = this;
+          let canvases = $("#" + current_PDFAnnotate.container_id + " canvas");
+
+          canvases.each(function (index, el) {
+            var background = el.toDataURL("image/png");
+
+            //Se establece el objeto del pincel para cada página del pdf
+            var fabricObj = new fabric.Canvas(el.id, {
+              freeDrawingBrush: {
+                width: 3,
+                color: current_PDFAnnotate.color,
+              },
+              isDrawingMode: true
+            });
+            current_PDFAnnotate.fabricObjects.push(fabricObj);
+
+            $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+              fabricObj.freeDrawingBrush.width = 3;
+            });
+
+            //Guarda los objetos creados dentro cada página
+            if (typeof options.onPageUpdated == "function") {
+              fabricObj.on("object:added", function () {
+                var oldValue = Object.assign(
+                  {},
+                  current_PDFAnnotate.fabricObjectsData[index]
+                );
+                current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
+                options.onPageUpdated(
+                  index + 1,
+                  oldValue,
+                  current_PDFAnnotate.fabricObjectsData[index]
+                );
+              });
+            }
+            //Renderiza cada página con los cambios hechos con Fabric
+            fabricObj.setBackgroundImage(
+              background,
+              fabricObj.renderAll.bind(fabricObj)
+            );
+            //Añadir objetos tipo texto haciendo click
+            $(fabricObj.upperCanvasEl).on('click touchstart', function (event) {
+              current_PDFAnnotate.active_canvas = index;
+              current_PDFAnnotate.fabricClickHandler(event, fabricObj);
+            });
+            //Esto garantiza que cualquier cambio que se haga en el lienzo se guarde.
+            fabricObj.on("after:render", function () {
+              current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
+              fabricObj.off("after:render");
+            });
+
+            //Finaliza exitosamente el renderizado
+            if (index === canvases.length - 1 && typeof options.ready === "function") {
+              options.ready();
+            }
+          });
+        };
+
+        //Función para añadir los objetos tipo texto y el borrador
+        this.fabricClickHandler = function (event, fabricObj) {
+          var current_PDFAnnotate = this;
+
+          // Obtener las coordenadas del evento (clic o toque)
+          var x, y;
+          if (event.type === 'click') {
+            x = event.clientX;
+            y = event.clientY;
+          } else if (event.type === 'touchstart') {
+            // Obtener la primera posición de toque
+            x = event.touches[0].clientX;
+            y = event.touches[0].clientY;
+          }
+
+          if (current_PDFAnnotate.active_tool == 2) {
+            var text = new fabric.IText("Escribe acá", {
+              left: x - fabricObj.upperCanvasEl.getBoundingClientRect().left,
+              top: y - fabricObj.upperCanvasEl.getBoundingClientRect().top,
+              fill: current_PDFAnnotate.color,
+              fontSize: current_PDFAnnotate.font_size,
+              selectable: true
+            });
+            fabricObj.add(text);
+            current_PDFAnnotate.active_tool = 0;
+            var boton = document.getElementById("hand");
+            boton.click();
+          }else{
+            if(current_PDFAnnotate.active_tool == 3){
+              var targetObject = fabricObj.findTarget(event, { includeDefaultValues: false });
+              if (targetObject) {
+                // Eliminar el objeto del lienzo
+                fabricObj.remove(targetObject);
+              }
+            }
+          }
+        };
+      };
+
+      //Función que habilita la herramienta de selección
+      PDFAnnotate.prototype.enableSelector = function () {
+        var current_PDFAnnotate = this;
+        current_PDFAnnotate.active_tool = 0;
+        if (current_PDFAnnotate.fabricObjects.length > 0) {
+
+          
+        for (var i = 0; i < current_PDFAnnotate.fabricObjects.length; i++) {
+          current_PDFAnnotate.fabricObjects[i].isDrawingMode = false;
+          current_PDFAnnotate.fabricObjects[i].selectable = true;
+        }
+        }
+      };
+
+      //Función que habilita la herramienta del lapiz
+      PDFAnnotate.prototype.enablePencil = function () {
+        var current_PDFAnnotate = this;
+        current_PDFAnnotate.active_tool = 1;
+        if (current_PDFAnnotate.fabricObjects.length > 0) {
+          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = true;
+          });
+        }
+      };
+
+      //Función que habilita la herramienta de añadir texto
+      PDFAnnotate.prototype.enableAddText = function () {
+        var current_PDFAnnotate = this;
+        current_PDFAnnotate.active_tool = 2;
+        if (current_PDFAnnotate.fabricObjects.length > 0) {
+          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = false;
+          });
+        }
+      };
+
+      //Función que habilita la opción de eliminar objetos
+      PDFAnnotate.prototype.deleteSelectedObject = function () {
+        var current_PDFAnnotate = this;
+        current_PDFAnnotate.active_tool = 3;
+        if (current_PDFAnnotate.fabricObjects.length > 0) {
+          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+            fabricObj.isDrawingMode = false;
+          });
+        }
+      };
+
+      //Función que permite guardar el pdf
+      /*
+      PDFAnnotate.prototype.savePdf = function (fileName) {
+        var current_PDFAnnotate = this;
+        var doc = new jspdf.jsPDF();
+        if (typeof fileName === "undefined") {
+          fileName = `${new Date().getTime()}.pdf`;
+        }
+
+        current_PDFAnnotate.fabricObjects.forEach(function (fabricObj, index) {
+          if (index != 0) {
+            doc.addPage();
+            doc.setPage(index + 1);
+          }
+          doc.addImage(
+            fabricObj.toDataURL({
+              format: "png",
+            }),
+            current_PDFAnnotate.pageImageCompression == "NONE" ? "PNG" : "JPEG",
+            0,
+            0,
+            doc.internal.pageSize.getWidth(),
+            doc.internal.pageSize.getHeight(),
+            `page-${index + 1}`,
+            ["FAST", "MEDIUM", "SLOW"].indexOf(
+              current_PDFAnnotate.pageImageCompression
+            ) >= 0
+              ? current_PDFAnnotate.pageImageCompression
+              : undefined
+          );
+          if (index === current_PDFAnnotate.fabricObjects.length - 1) {
+            doc.save(fileName);
+          }
+        });
+      };
+      */
+
+      //Modifica el tamaño del pincel
+      PDFAnnotate.prototype.setBrushSize = function (size) {
+        var current_PDFAnnotate = this;
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+          fabricObj.freeDrawingBrush.width = size;
+        });
+      };
+
+      //Modifica el color
+      PDFAnnotate.prototype.setColor = function (color) {
+        var current_PDFAnnotate = this;
+        current_PDFAnnotate.color = color;
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+          fabricObj.freeDrawingBrush.color = current_PDFAnnotate.color;
+        });
+      };
+
+      //Modifica el tamaño de la fuente
+      PDFAnnotate.prototype.setFontSize = function (size) {
+        this.font_size = size;
+      };
+
+      //Limpiar la página
+      /*
+      PDFAnnotate.prototype.clearActivePage = function () {
+        var current_PDFAnnotate = this;
+        var fabricObj =
+          current_PDFAnnotate.fabricObjects[current_PDFAnnotate.active_canvas];
+        var bg = fabricObj.backgroundImage;
+        if (confirm("Are you sure?")) {
+          fabricObj.clear();
+          fabricObj.setBackgroundImage(bg, fabricObj.renderAll.bind(fabricObj));
+        }
+      };
+      */
+
+      //Deshabilitación de Fabric (Intento fallido de arreglar el scroll)
+      /*
+      PDFAnnotate.prototype.deshabfabric = function(){
+        var current_PDFAnnotate = this;
+        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
+          fabricObj.isDrawingMode = false;
+          fabricObj.selection = false; // Deshabilita la selección de objetos
+          fabricObj.forEachObject(function(obj) {
+              obj.selectable = false; // Deshabilita la interactividad con los objetos existentes
+          });
+        });
+      };
+      */
+
+      //Llamada de la función principal, declaración del objeto pdf
+      //var pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
+      var pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
+          ready() {
+            console.log("Plugin initialized successfully");
+          },
+          //Escala del pdf (Es lo que hay que modificar)
+          scale: params(),
+          //scale: 0.5,
+          pageImageCompression: "NONE", // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
         }
       );
 
-      //Se inicializa el objeto de la biblioteca fabric.js para cada página renderizada del pdf.
-      this.initFabric = function () {
-        var current_PDFAnnotate = this;
-        let canvases = $("#" + current_PDFAnnotate.container_id + " canvas");
-
-        canvases.each(function (index, el) {
-          var background = el.toDataURL("image/png");
-
-          //Se establece el objeto del pincel para cada página del pdf
-          var fabricObj = new fabric.Canvas(el.id, {
-            freeDrawingBrush: {
-              width: 3,
-              color: current_PDFAnnotate.color,
-            },
-            isDrawingMode: true
-          });
-          current_PDFAnnotate.fabricObjects.push(fabricObj);
-
-          $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-            fabricObj.freeDrawingBrush.width = 3;
-          });
-
-          //Guarda los objetos creados dentro cada página
-          if (typeof options.onPageUpdated == "function") {
-            fabricObj.on("object:added", function () {
-              var oldValue = Object.assign(
-                {},
-                current_PDFAnnotate.fabricObjectsData[index]
-              );
-              current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
-              options.onPageUpdated(
-                index + 1,
-                oldValue,
-                current_PDFAnnotate.fabricObjectsData[index]
-              );
-            });
-          }
-          //Renderiza cada página con los cambios hechos con Fabric
-          fabricObj.setBackgroundImage(
-            background,
-            fabricObj.renderAll.bind(fabricObj)
-          );
-          //Añdir objetos tipo texto haciendo click
-          $(fabricObj.upperCanvasEl).on('click touchstart', function (event) {
-            current_PDFAnnotate.active_canvas = index;
-            current_PDFAnnotate.fabricClickHandler(event, fabricObj);
-          });
-          //Esto garantiza que cualquier cambio que se haga en el lienzo se guarde.
-          fabricObj.on("after:render", function () {
-            current_PDFAnnotate.fabricObjectsData[index] = fabricObj.toJSON();
-            fabricObj.off("after:render");
-          });
-
-          //Finaliza exitosamente el renderizado
-          if (
-            index === canvases.length - 1 &&
-            typeof options.ready === "function"
-          ) {
-            options.ready();
-          }
-        });
-      };
-
-      //Función para añadir los objetos tipo texto y el borrador
-      this.fabricClickHandler = function (event, fabricObj) {
-        var current_PDFAnnotate = this;
-
-        // Obtener las coordenadas del evento (clic o toque)
-        var x, y;
-        if (event.type === 'click') {
-          x = event.clientX;
-          y = event.clientY;
-        } else if (event.type === 'touchstart') {
-          // Obtener la primera posición de toque
-          x = event.touches[0].clientX;
-          y = event.touches[0].clientY;
+      //Función que cambia la herramienta activa
+      function changeActiveTool(event) {
+        if ($(event.target).hasClass("tool-button")) {
+          element = $(event.target);
+        } else {
+          element = $(event.target).parents(".tool-button").first();
         }
+        $(".tool-button.active").removeClass("active");
+        $(element).addClass("active");
+      }
 
-        if (current_PDFAnnotate.active_tool == 2) {
-          var text = new fabric.IText("Escribe acá", {
-            left: x - fabricObj.upperCanvasEl.getBoundingClientRect().left,
-            top: y - fabricObj.upperCanvasEl.getBoundingClientRect().top,
-            fill: current_PDFAnnotate.color,
-            fontSize: current_PDFAnnotate.font_size,
-            selectable: true
-          });
-          fabricObj.add(text);
-          current_PDFAnnotate.active_tool = 0;
-          var boton = document.getElementById("hand");
-          boton.click();
+      //Activar la manito
+      function enableSelector(event) {
+        event.preventDefault();
+        changeActiveTool(event);
+        pdf.enableSelector();
+      }
+
+      //Activar el pincel normal
+      function enablePencil1(event) {
+        if(pdf.resaltador_last){
+          pdf.resaltador_last = false
+          pdf.setColor(pdf.anterior)
+        }
+        pdf.setBrushSize(3);
+        event.preventDefault();
+        changeActiveTool(event);
+        pdf.enablePencil();
+      }
+
+      //Activar el pincel subrayado
+      function enablePencil2(event) {
+        pdf.setBrushSize(10);
+        if(pdf.color != "rgba(255, 255, 0, 0.4)"){
+          pdf.anterior = pdf.color;
+        }
+        pdf.resaltador_last = true
+        pdf.setColor("rgba(255, 255, 0, 0.4)");
+        event.preventDefault();
+        changeActiveTool(event);
+        pdf.enablePencil();
+      }
+
+      //Activar el texto
+      function enableAddText(event) {
+        if(pdf.resaltador_last){
+          pdf.resaltador_last = false
+          pdf.setColor(pdf.anterior)
+        }
+        event.preventDefault();
+        changeActiveTool(event);
+        pdf.enableAddText();
+      }
+
+      //Eliminar objeto seleccionado
+      function deleteSelectedObject(event) {
+        event.preventDefault();
+        pdf.deleteSelectedObject();
+      }
+
+      //Guardar PDF
+      /*
+      function savePDF() {
+        // pdf.savePdf();
+        pdf.savePdf("sample.pdf"); // save with given file name
+      }
+      */
+
+      //Limpiar la página
+      /*
+      function clearPage() {
+        pdf.clearActivePage();
+      }
+      */
+
+      //Acceder a los parámetros del tamaño de la pantalla y del ancho del contenedor padre
+      function params(idElemento) {
+        return 0.0010277492291880781 * window.innerWidth + 0.09609455292908531;
+      }
+
+      //Deshabilitar fabric (Intento fallido de arreglar el scroll)
+      /*
+      function habilitarfabric(){
+        //pdf.deshabfabric();
+        if(pdf.hab == true){
+          document.getElementById('barra-herramientas').style.backgroundColor = 'red';
+          var pdf_container = document.getElementById('pdf-container');
+          var hijos = pdf_container.children;
+          for (var i = 0; i < hijos.length; i++) {
+              canvas = hijos[i].children;
+              hijos[i].removeChild(canvas[1]);
+              canvas[0].style.touchAction = 'auto';
+          };
+
+          var i = 0;
+
+          while(i < pdf.pages_rendered){
+            canvas = hijos[0].children[0];
+            pdf_container.appendChild(canvas);
+            pdf_container.removeChild(hijos[0]);
+            i = i +1;
+          }
+
+          for (var i = 0; i < hijos.length; i++) {
+              hijos[i].style.position = 'relative';
+              hijos[i].style.left = '';
+              hijos[i].style.top = '';
+          };
+          
+          pdf.hab = false;
+
+          console.log(pdf.active_canvas);
         }else{
-          if(current_PDFAnnotate.active_tool == 3){
-            var targetObject = fabricObj.findTarget(event, { includeDefaultValues: false });
-            if (targetObject) {
-              // Eliminar el objeto del lienzo
-              fabricObj.remove(targetObject);
-            }
-            //current_PDFAnnotate.active_tool = 0; // Cambiar la herramienta activa
-            //var boton = document.getElementById("hand");
-            //boton.click(); // Simular un clic en el botón "hand" u otra acción que desees
+          if (pdf.pages_rendered == pdf.number_of_pages){
+            pdf.initFabric();
           }
+          document.getElementById('barra-herramientas').style.backgroundColor = 'rgb(50, 54, 57)';
+          pdf.hab = true;
+          console.log(pdf.active_canvas);
         }
-      };
-    };
-
-    //Función que habilita la herramienta de selección
-    PDFAnnotate.prototype.enableSelector = function () {
-      var current_PDFAnnotate = this;
-      current_PDFAnnotate.active_tool = 0;
-      if (current_PDFAnnotate.fabricObjects.length > 0) {
-
-        
-      for (var i = 0; i < current_PDFAnnotate.fabricObjects.length; i++) {
-        current_PDFAnnotate.fabricObjects[i].isDrawingMode = false;
-        current_PDFAnnotate.fabricObjects[i].selectable = true;
       }
-      }
-    };
+      */
 
-    //Función que habilita la herramienta del lapiz
-    PDFAnnotate.prototype.enablePencil = function () {
-      var current_PDFAnnotate = this;
-      current_PDFAnnotate.active_tool = 1;
-      if (current_PDFAnnotate.fabricObjects.length > 0) {
-        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-          fabricObj.isDrawingMode = true;
+      //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
+      $(function () {
+        $(".color-tool").click(function () {
+          if (pdf.color[pdf.color.length - 2] != 4) {
+            $(".color-tool.active").removeClass("active");
+            $(this).addClass("active");
+            color = $(this).get(0).style.backgroundColor;
+            pdf.setColor(color);
+          }
         });
-      }
-    };
 
-    //Función que habilita la herramienta de añadir texto
-    PDFAnnotate.prototype.enableAddText = function () {
-      var current_PDFAnnotate = this;
-      current_PDFAnnotate.active_tool = 2;
-      if (current_PDFAnnotate.fabricObjects.length > 0) {
-        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-          fabricObj.isDrawingMode = false;
+        $("#brush-size").change(function () {
+          var width = $(this).val();
+          pdf.setBrushSize(width);
         });
-      }
-    };
 
-    //Función que habilita la opción de eliminar objetos
-    PDFAnnotate.prototype.deleteSelectedObject = function () {
-      var current_PDFAnnotate = this;
-      current_PDFAnnotate.active_tool = 3;
-      if (current_PDFAnnotate.fabricObjects.length > 0) {
-        $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-          fabricObj.isDrawingMode = false;
-        });
-      }
-    };
-
-    //Función que permite guardar el pdf
-    PDFAnnotate.prototype.savePdf = function (fileName) {
-      var current_PDFAnnotate = this;
-      var doc = new jspdf.jsPDF();
-      if (typeof fileName === "undefined") {
-        fileName = `${new Date().getTime()}.pdf`;
-      }
-
-      current_PDFAnnotate.fabricObjects.forEach(function (fabricObj, index) {
-        if (index != 0) {
-          doc.addPage();
-          doc.setPage(index + 1);
-        }
-        doc.addImage(
-          fabricObj.toDataURL({
-            format: "png",
-          }),
-          current_PDFAnnotate.pageImageCompression == "NONE" ? "PNG" : "JPEG",
-          0,
-          0,
-          doc.internal.pageSize.getWidth(),
-          doc.internal.pageSize.getHeight(),
-          `page-${index + 1}`,
-          ["FAST", "MEDIUM", "SLOW"].indexOf(
-            current_PDFAnnotate.pageImageCompression
-          ) >= 0
-            ? current_PDFAnnotate.pageImageCompression
-            : undefined
-        );
-        if (index === current_PDFAnnotate.fabricObjects.length - 1) {
-          doc.save(fileName);
-        }
-      });
-    };
-
-    //Modifica el tamaño del pincel
-    PDFAnnotate.prototype.setBrushSize = function (size) {
-      var current_PDFAnnotate = this;
-      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-        fabricObj.freeDrawingBrush.width = size;
-      });
-    };
-
-    //Modifica el color
-    PDFAnnotate.prototype.setColor = function (color) {
-      var current_PDFAnnotate = this;
-      current_PDFAnnotate.color = color;
-      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-        fabricObj.freeDrawingBrush.color = current_PDFAnnotate.color;
-      });
-    };
-
-    //Modifica el tamaño de la fuente
-    PDFAnnotate.prototype.setFontSize = function (size) {
-      this.font_size = size;
-    };
-
-    //Limpiar la página
-    PDFAnnotate.prototype.clearActivePage = function () {
-      var current_PDFAnnotate = this;
-      var fabricObj =
-        current_PDFAnnotate.fabricObjects[current_PDFAnnotate.active_canvas];
-      var bg = fabricObj.backgroundImage;
-      if (confirm("Are you sure?")) {
-        fabricObj.clear();
-        fabricObj.setBackgroundImage(bg, fabricObj.renderAll.bind(fabricObj));
-      }
-    };
-
-    //Deshabilitación de Fabric
-    PDFAnnotate.prototype.deshabfabric = function(){
-      var current_PDFAnnotate = this;
-      $.each(current_PDFAnnotate.fabricObjects, function (index, fabricObj) {
-        fabricObj.isDrawingMode = false;
-        fabricObj.selection = false; // Deshabilita la selección de objetos
-        fabricObj.forEachObject(function(obj) {
-            obj.selectable = false; // Deshabilita la interactividad con los objetos existentes
+        $("#font-size").change(function () {
+          var font_size = $(this).val();
+          pdf.setFontSize(font_size);
         });
       });
-    };
-
-    //Llamada de la función principal, declaración del objeto pdf
-    //var pdf = new PDFAnnotate("pdf-container", "./assets/adefjam.pdf", {
-    var pdf = new PDFAnnotate("pdf-container","/images/libros-estudiantes/primero_estudiante_plataforma.pdf",{
-        //var pdf = new PDFAnnotate("pdf-container", "/prueba.pdf", {
-        ready() {
-          console.log("Plugin initialized successfully");
-        },
-        //Escala del pdf (Es lo que hay que modificar)
-        scale: params(),
-        //scale: 0.5,
-        pageImageCompression: "MEDIUM", // FAST, MEDIUM, SLOW(Helps to control the new PDF file size)
-      }
-    );
-
-    //Función que cambia la herramienta activa
-    function changeActiveTool(event) {
-      if ($(event.target).hasClass("tool-button")) {
-        element = $(event.target);
-      } else {
-        element = $(event.target).parents(".tool-button").first();
-      }
-      $(".tool-button.active").removeClass("active");
-      $(element).addClass("active");
     }
-
-    //Activar la manito
-    function enableSelector(event) {
-      event.preventDefault();
-      changeActiveTool(event);
-      pdf.enableSelector();
-    }
-
-    //Activar el pincel normal
-    function enablePencil1(event) {
-      if(pdf.resaltador_last){
-        pdf.resaltador_last = false
-        pdf.setColor(pdf.anterior)
-      }
-      pdf.setBrushSize(3);
-      event.preventDefault();
-      changeActiveTool(event);
-      pdf.enablePencil();
-    }
-
-    //Activar el pincel subrayado
-    function enablePencil2(event) {
-      pdf.setBrushSize(10);
-      if(pdf.color != "rgba(255, 255, 0, 0.4)"){
-        pdf.anterior = pdf.color;
-      }
-      pdf.resaltador_last = true
-      pdf.setColor("rgba(255, 255, 0, 0.4)");
-      event.preventDefault();
-      changeActiveTool(event);
-      pdf.enablePencil();
-    }
-
-    //Activar el texto
-    function enableAddText(event) {
-      if(pdf.resaltador_last){
-        pdf.resaltador_last = false
-        pdf.setColor(pdf.anterior)
-      }
-      event.preventDefault();
-      changeActiveTool(event);
-      pdf.enableAddText();
-    }
-
-    //Eliminar objeto seleccionado
-    function deleteSelectedObject(event) {
-      event.preventDefault();
-      pdf.deleteSelectedObject();
-    }
-
-    //Guardar PDF
-    function savePDF() {
-      // pdf.savePdf();
-      pdf.savePdf("sample.pdf"); // save with given file name
-    }
-
-    //Limpiar la página
-    function clearPage() {
-      pdf.clearActivePage();
-    }
-
-    //Acceder a los parámetros del tamaño de la pantalla y del ancho del contenedor padre
-    function params(idElemento) {
-      //var ancho_elemento = document.getElementById(idElemento).offsetWidth;
-      //var ancho_pantalla = window.innerWidth;
-      //alert(str("Ancho de la pantalla: " + window.innerWidth))
-      //console.log(document.getElementById(idElemento).offsetWidth);
-      //console.log(window.innerWidth);
-      return 0.0010277492291880781 * window.innerWidth + 0.09609455292908531;
-    }
-
-    //Deshabilitar fabric
-    function habilitarfabric(){
-      //pdf.deshabfabric();
-      if(pdf.hab == true){
-        document.getElementById('barra-herramientas').style.backgroundColor = 'red';
-        var pdf_container = document.getElementById('pdf-container');
-        var hijos = pdf_container.children;
-        for (var i = 0; i < hijos.length; i++) {
-            canvas = hijos[i].children;
-            hijos[i].removeChild(canvas[1]);
-            canvas[0].style.touchAction = 'auto';
-        };
-
-        var i = 0;
-
-        while(i < pdf.pages_rendered){
-          canvas = hijos[0].children[0];
-          pdf_container.appendChild(canvas);
-          pdf_container.removeChild(hijos[0]);
-          i = i +1;
-        }
-
-        for (var i = 0; i < hijos.length; i++) {
-            hijos[i].style.position = 'relative';
-            hijos[i].style.left = '';
-            hijos[i].style.top = '';
-        };
-        
-        pdf.hab = false;
-
-        console.log(pdf.active_canvas);
-      }else{
-        if (pdf.pages_rendered == pdf.number_of_pages){
-          pdf.initFabric();
-        }
-        document.getElementById('barra-herramientas').style.backgroundColor = 'rgb(50, 54, 57)';
-        pdf.hab = true;
-        console.log(pdf.active_canvas);
-      }
-    }
-
-    //Inicializador de las opciones de cambio de tamaño de lápiz, texto y selección de color
-    $(function () {
-      $(".color-tool").click(function () {
-        if (pdf.color[pdf.color.length - 2] != 4) {
-          $(".color-tool.active").removeClass("active");
-          $(this).addClass("active");
-          color = $(this).get(0).style.backgroundColor;
-          pdf.setColor(color);
-        }
-      });
-
-      $("#brush-size").change(function () {
-        var width = $(this).val();
-        pdf.setBrushSize(width);
-      });
-
-      $("#font-size").change(function () {
-        var font_size = $(this).val();
-        pdf.setFontSize(font_size);
-      });
-    });
   </script>
-  <!--<div style="margin-top: 600px; position: absolute; left: 0; z-index: 100; margin-bottom: 100px;">-->
+
   <div>
     <div id="barra-herramientas" class="toolbar">
       <!--Botones de colores-->
@@ -644,16 +642,6 @@
           class="color-tool"
           style="background-color: rgba(0, 0, 255, 1)"
         ></button>
-        <!--
-        <button
-          class="color-tool"
-          style="background-color: rgba(0, 128, 0, 1)"
-        ></button>
-        <button
-          class="color-tool"
-          style="background-color: rgba(255, 255, 0, 1)"
-        ></button>
-        -->
       </div>
       <!--Herramienta de lapiz-->
       <div class="tool">
@@ -693,26 +681,14 @@
         </button>
       </div>
 
-      <!--Deshabilitación de los fabric canvas-->
+      <!-- Para guardar el pdf -->
       <!--
       <div class="tool">
-        <button
-          class="btn btn-danger btn-sm"
-          onclick="habilitarfabric()"
-        >
-        <i class="fa fa-hand-paper-o" title="Free Hand"></i>
+        <button class="btn btn-light btn-sm" onclick="savePDF()">
+          <i class="fa fa-save"></i> Save
         </button>
       </div>
       -->
-      <!--
-
-    <div class="tool">
-      <button class="btn btn-light btn-sm" onclick="savePDF()">
-        <i class="fa fa-save"></i> Save
-      </button>
-    </div>
-
-    -->
 
       <!--Clear Page-->
       <!--
@@ -723,8 +699,11 @@
       </div>
       -->
     </div>
-    <!--Inicio de la zona donde se muestra el pdf-->
+    
+    <!-- Para uso pleno de todas las herramientas -->
     <div id="pdf-container" style="max-height: 600px; overflow-y: auto"></div>
-    <!--Fin de la zona donde se muestra el pdf-->
+    <!-- Para sólo visualizar el pdf -->
+    <!--<iframe src="./assets/adefjam.pdf" width="800" height="600" class="frame"></iframe>-->
+    <iframe src="https://drive.google.com/file/d/1IJWz5UCMh7D0XRVAEFhW91HCI6szHKhC/preview" width="800" height="600" class="frame"></iframe>
   </div>
 </div>
