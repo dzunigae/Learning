@@ -1,4 +1,8 @@
+//Importación de los estilos para este componente
+import "./styles/PrimerComponente_funcion.css";
+
 //Tipos de datos que podemos usar
+//Nota: Las variables se ponen afuera del componente para que cada vez que éste deba redibujarse, las variables no se reinicien.
 const string = "Esto es un texto";
 const number = 123456;
 const array = ["Curso de React", "Youtube", 4, 1000000];

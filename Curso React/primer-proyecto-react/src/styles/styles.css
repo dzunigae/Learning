@@ -1,0 +1,6 @@
+/*Css para toda la aplicación, importado en main.jsx*/
+body,
+html {
+  background-color: black;
+  color: white;
+}
