@@ -1,19 +1,24 @@
-function handle_click(event,valor) {
-  valor += 1;
-  console.log(valor);
+import { useState } from "react";
+
+function handle_click(contador, setContador) {
+  setContador(contador + 1);
 }
 
-const Button = ({valor}) => {
-  //event es un dato especial que resume toda la información relevante de la acción en cuestión
-  return <button onClick={(event) => handle_click(event,valor)}>Soy un botón</button>;
+const Button = ({ contador, setContador }) => {
+  return (
+    <button onClick={() => handle_click(contador, setContador)}>
+      Soy un botón
+    </button>
+  );
 };
 
-export const ContadorApp = ({value}) => {
+export const ContadorApp = ({ value }) => {
+  const [contador, setContador] = useState(value)
   return (
     <>
       <h1>Contador: </h1>
-      <p>{value}</p>
-      <Button valor={value}></Button>
+      <p>{contador}</p>
+      <Button contador={contador} setContador={setContador}></Button>
     </>
   );
 };
