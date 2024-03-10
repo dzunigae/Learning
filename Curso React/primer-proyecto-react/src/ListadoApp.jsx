@@ -1,6 +1,13 @@
+import { useState } from "react";
+import { AgregarTarea } from "./components/AgregarTarea";
+
+const addTask = (arreglo,setArreglo) => {
+  setArreglo([...arreglo, {nombre: 'Nuevo', visto: false}])
+}
+
 const Items_1 = ({ nombre, visto }) => {
   return (
-    <li>
+    <li className="rojito">
       {nombre}
       {/*Emojis con la tecla windows + .*/}
       {/*Esto es un condicional ternario en Javascript*/}
@@ -11,7 +18,7 @@ const Items_1 = ({ nombre, visto }) => {
 
 const Items_2 = ({ nombre, visto }) => {
   return (
-    <li>
+    <li className="rojito">
       {nombre}
       {/*Emojis con la tecla windows + .*/}
       {/*Aquí las condiciones se van dando de forma anidada, se la primera no se cumple, no se mostrará lo siguiente*/}
@@ -21,40 +28,54 @@ const Items_2 = ({ nombre, visto }) => {
 };
 
 export const ListadoApp = () => {
+  let listadoSecciones = [
+    { nombre: "Instalaciones necesarias", visto: true },
+    { nombre: "Uso de Vite", visto: true },
+    { nombre: "Componentes", visto: true },
+    { nombre: "Variables en JSX", visto: true },
+    { nombre: "Props", visto: true },
+    { nombre: "Eventos", visto: true },
+    { nombre: "useState", visto: true },
+    { nombre: "Redux", visto: false },
+    { nombre: "customHooks", visto: false },
+  ];
+
+  const [arreglo, setArreglo] = useState(listadoSecciones);
+
   return (
     <>
       <h1>Listado de Temas del Curso</h1>
+      <br />
+      <AgregarTarea></AgregarTarea>
       <br />
       <h2>
         Condicional ternario para hacer aparecer emojis según visto sea true o
         false
       </h2>
       <ol>
-        <Items_1 nombre="Instalaciones necesarias" visto={true}></Items_1>
-        <Items_1 nombre="Uso de Vite" visto={true}></Items_1>
-        <Items_1 nombre="Componentes" visto={true}></Items_1>
-        <Items_1 nombre="Variables en JSX" visto={true}></Items_1>
-        <Items_1 nombre="Props" visto={true}></Items_1>
-        <Items_1 nombre="Eventos" visto={true}></Items_1>
-        <Items_1 nombre="useState" visto={true}></Items_1>
-        <Items_1 nombre="Redux" visto={false}></Items_1>
-        <Items_1 nombre="customHooks" visto={false}></Items_1>
+        {/*Key es necesario porque react exige que en estos casos, cada elemento generado de esta forma tenga identificadores únicos.*/}
+        {arreglo.map((item) => (
+          <Items_1
+            key={item.nombre}
+            nombre={item.nombre}
+            visto={item.visto}
+          ></Items_1>
+        ))}
       </ol>
       <br />
       <h2>
-        Condicional ternario para hacer que los emojis aparezcan según visto
-        sea true o false
+        Condicional ternario para hacer que los emojis aparezcan según visto sea
+        true o false
       </h2>
       <ol>
-        <Items_2 nombre="Instalaciones necesarias" visto={true}></Items_2>
-        <Items_2 nombre="Uso de Vite" visto={true}></Items_2>
-        <Items_2 nombre="Componentes" visto={true}></Items_2>
-        <Items_2 nombre="Variables en JSX" visto={true}></Items_2>
-        <Items_2 nombre="Props" visto={true}></Items_2>
-        <Items_2 nombre="Eventos" visto={true}></Items_2>
-        <Items_2 nombre="useState" visto={true}></Items_2>
-        <Items_2 nombre="Redux" visto={false}></Items_2>
-        <Items_2 nombre="customHooks" visto={false}></Items_2>
+        {/*Key es necesario porque react exige que en estos casos, cada elemento generado de esta forma tenga identificadores únicos.*/}
+        {arreglo.map((item) => (
+          <Items_2
+            key={item.nombre}
+            nombre={item.nombre}
+            visto={item.visto}
+          ></Items_2>
+        ))}
       </ol>
     </>
   );
