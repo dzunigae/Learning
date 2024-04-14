@@ -1,12 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export const UserList = ({ endPoint }) => {
+export const UserList = ({ endpoint }) => {
   const [data, setData] = useState([]);
 
-  const fetchData = async () => {
+  const fetchdata = async () => {
     try {
       const response = await fetch(
-        `https://jsonplaceholder.typicode.com/${endPoint}`
+        `https://jsonplaceholder.typicode.com/${endpoint}`
       );
       const data = await response.json();
       setData(data);
@@ -16,14 +16,16 @@ export const UserList = ({ endPoint }) => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [endPoint]);
+    fetchdata()
+  }, [endpoint])
 
   return (
-    <ul>
-      {endPoint == "users"
-        ? data.map((item) => <li key={item.id}>{item.name}</li>)
-        : data.map((item) => <li key={item.id}>{item.body}</li>)}
-    </ul>
+    <>
+      <ul>
+        {endpoint == "users"
+          ? data.map((item) => <li key={item.id}>{item.name}</li>)
+          : data.map((item) => <li key={item.id}>{item.body}</li>)}
+      </ul>
+    </>
   );
 };
