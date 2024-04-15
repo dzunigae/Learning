@@ -1,0 +1,3 @@
+El comando npm run build transforma el proyecto en la versión final de producción, en la carpeta dist.
+
+Para producción en el curso usamos Netlify: https://www.netlify.com/, el login es con github.
