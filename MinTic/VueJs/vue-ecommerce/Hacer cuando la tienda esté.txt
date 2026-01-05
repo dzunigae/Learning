@@ -1,0 +1,2 @@
+Mudar Vuex a Pinia
+Dejar dos versiones funcionales: Una con Vuex y otra con Pinia
